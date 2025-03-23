@@ -1,0 +1,377 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName          String
+  lastName           String 
+  email              String   @unique
+  profileImage       String   @default("")
+  address            String   @default("")
+  mobile             String   @default("")
+
+  facebookAcc        String   @default("")
+  instagramAcc       String   @default("")
+
+  firebaseId         String   @unique
+  firebaseToken      String   @unique
+
+  pushToken          String   @default("")
+  refreshToken       String?
+  refreshTokenExpiry DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  CourseEnrollment CourseEnrollment[]
+  bodyHistories    BodyHistory[]
+  sleepHistories   SleepHistory[]
+  WaterHistory     WaterHistory[]
+  CaloriesHistory  CaloriesHistory[]
+  GroupMembers     GroupMembers[]
+  EventComment     EventComment[]
+
+  Story Story[]
+}
+
+//   Personal         Personal?
+//   Teacher          Teacher[]
+//   CourseEnrollment CourseEnrollment[]
+// }
+
+model Teacher {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+
+  description String   @default("")
+
+  rating      Float    @default(0)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+
+  Courses   Courses[]
+  Exercises Exercises[]
+  Group     Group[]
+  CourseEnrollment CourseEnrollment[]
+}
+
+model BodyHistory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  weight     Float
+  height     Float
+  bodyType   String
+  age        Int
+  goal       String 
+  bodyIssue  String
+  birthDate  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  User       User    @relation(fields: [userId], references: [id])
+  userId     String  @db.ObjectId
+}
+
+model SleepHistory {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  sleepTime  DateTime
+  wakeTime   DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  User       User?    @relation(fields: [userId], references: [id])
+  userId     String?  @db.ObjectId
+}
+
+model WaterHistory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  waterIntake Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String? @db.ObjectId
+}
+
+model CaloriesHistory {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  caloriesIntake Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String? @db.ObjectId
+}
+
+model Meal {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  mealType String
+  mealTime DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mealRecipes      MealRecipe[]
+}
+
+model Recipe {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  recipe_name        String
+  recipe_description String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  mealRecipes MealRecipe[]
+}
+
+model MealRecipe {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  meal     Meal   @relation(fields: [mealId], references: [id])
+  mealId   String @db.ObjectId
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId String @db.ObjectId
+
+  @@index([mealId])
+  @@index([recipeId])
+}
+
+
+model GroupMembers {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  groupId   String   @db.ObjectId
+  userId    String   @db.ObjectId
+  Role      String   @default("member")
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rating    Float    @default(0)
+
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([groupId])
+  @@index([userId])
+}
+
+model Group {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String  @default("")
+  bannerImage   String  @default("")
+  // admin         String  @db.ObjectId
+  requirements  String  @default("")
+
+  status        String  @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Story        Story[]
+  GroupMembers GroupMembers[]
+  GroupCourses GroupCourses[]
+  Event        Event[]
+
+  adminId      String  @db.ObjectId
+  admin        Teacher @relation(fields: [adminId], references: [id])
+}
+
+model Story {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  GroupId   String   @db.ObjectId
+  userId    String   @db.ObjectId
+  content   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Group Group @relation(fields: [GroupId], references: [id])
+  User  User  @relation(fields: [userId], references: [id])
+
+}
+
+model Event {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String   @default("")
+  startTime   DateTime
+  endTime     DateTime 
+  location    String   @default("")
+
+  imageURL    String   @default("")
+  status      String   @default("active")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String   @db.ObjectId
+
+  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     String   @db.ObjectId
+
+
+  EventComment EventComment[]
+
+  @@index([groupId])
+}
+
+model EventComment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId   String   @db.ObjectId
+  userId    String   @db.ObjectId
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([eventId])
+  @@index([userId])
+}
+
+model GroupCourses {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  groupId   String   @db.ObjectId
+  courseId  String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group  Group   @relation(fields: [groupId], references: [id])
+  course Courses @relation(fields: [courseId], references: [id])
+
+  @@index([groupId])
+  @@index([courseId])
+}
+
+model Courses {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  title       String
+  description String
+
+  bannerImage String
+  shortVideo  String
+
+  status      String  @default("active")
+
+  teacherId String @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  courseEnrollments CourseEnrollment[]
+  courseExercises   CourseExercises[]
+
+  CourseSchedule CourseSchedule[]
+  GroupCourses   GroupCourses[]
+
+  @@index([teacherId])
+}
+
+model CourseExercises {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId   String   @db.ObjectId
+  exerciseId String   @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  courses   Courses   @relation(fields: [courseId], references: [id])
+  exercises Exercises @relation(fields: [exerciseId], references: [id])
+
+  @@index([courseId])
+  @@index([exerciseId])
+}
+
+model Exercises {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name        String
+  description String @default("")
+  purpose     String @default("")
+  duration    Int
+
+  level       String @default("beginner")
+  type        String @default("cardio")
+
+  image       String @default("")
+  video       String @default("")
+  status      String @default("active")
+
+  teacherId String @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher Teacher @relation(fields: [teacherId], references: [id])
+
+  courseExercises   CourseExercises[]
+
+  @@index([teacherId])
+}
+
+
+model CourseEnrollment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @db.ObjectId
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId String   @db.ObjectId
+  course    Courses  @relation(fields: [courseId], references: [id])
+  courseId  String   @db.ObjectId
+  rating    Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([teacherId])
+  @@index([courseId])
+}
+
+model CourseSchedule {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId  String   @db.ObjectId
+  startTime DateTime
+  endTime   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course Courses @relation(fields: [courseId], references: [id])
+
+  @@index([courseId])
+}
+
+model PromoBan {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  // userId      String   @db.ObjectId
+  title       String
+  description String
+  imageUlr    String
+
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+}
+
+model Subscription {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  startDate   DateTime
+  expiryDate  DateTime
+  tag         String   @default("free")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

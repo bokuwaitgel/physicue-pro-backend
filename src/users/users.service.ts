@@ -1,0 +1,348 @@
+import { Injectable, HttpStatus } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateUserDto, createTeacherDto, updateTeacherDto } from './users.dto';
+
+@Injectable()
+export class UsersService {
+  constructor(public prisma: PrismaService) {}
+
+  async create(createUserDto: CreateUserDto) {
+    //check if user already exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: createUserDto.firebaseId,
+      },
+    });
+    if (user) {
+      return {
+            success: false,
+            type: 'failed',
+            message: 'User already exists',
+            code: HttpStatus.FOUND
+         }
+    }
+
+    try{
+        const result = await this.prisma.user.create({
+            data: {
+              firebaseId: createUserDto.firebaseId,
+              firebaseToken: createUserDto.firebaseToken,
+              firstName: createUserDto.firstName,
+              lastName: createUserDto.lastName,
+              email: createUserDto.email,
+              profileImage: createUserDto.profileImage,
+              address: createUserDto.address,
+              mobile: createUserDto.mobile,
+
+              facebookAcc: createUserDto.facebookAcc,
+              instagramAcc: createUserDto.instagramAcc,
+            }
+          });
+
+          const body = await this.prisma.bodyHistory.create({
+            data: {
+              weight: createUserDto.body.weight,
+              height: createUserDto.body.height,
+              bodyType: createUserDto.body.bodyType,
+              age: createUserDto.body.age,
+              birthDate: createUserDto.body.birthDate,
+              bodyIssue: createUserDto.body.bodyIssue,
+              goal: createUserDto.body.goal,
+              userId: result.id,
+            }
+          });
+      
+          return {
+            success: true,
+            type: 'success',
+            message: 'User created',
+            data: {
+              user: result,
+              body: body
+            },
+            code: HttpStatus.CREATED,
+          }
+    } catch (error) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'Error creating user',
+            error: error,
+            code: HttpStatus.INTERNAL_SERVER_ERROR
+         }
+    }
+  }
+
+  async update(id: string, updateUserDto: Partial<CreateUserDto>) {
+    //check if user already exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: id,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const result = await this.prisma.user.update({
+      where: { firebaseId: id },
+      data: {
+        firebaseToken: updateUserDto.firebaseToken,
+        firstName: updateUserDto.firstName,
+        lastName: updateUserDto.lastName,
+        email: updateUserDto.email,
+        profileImage: updateUserDto.profileImage,
+        address: updateUserDto.address,
+        mobile: updateUserDto.mobile,
+
+        facebookAcc: updateUserDto.facebookAcc,
+        instagramAcc: updateUserDto.instagramAcc,
+      },
+    });
+
+    let bodyHistory = await this.prisma.bodyHistory.findFirst({
+      where: {
+        userId: user.id
+      }
+    });
+    if (updateUserDto.body) {
+
+      if (bodyHistory) {
+        bodyHistory = await this.prisma.bodyHistory.update({
+          where: {
+            id: bodyHistory.id
+          },
+          data: {
+            weight: updateUserDto.body.weight,
+            height: updateUserDto.body.height,
+            bodyType: updateUserDto.body.bodyType,
+            age: updateUserDto.body.age,
+            birthDate: updateUserDto.body.birthDate,
+            bodyIssue: updateUserDto.body.bodyIssue,
+            goal: updateUserDto.body.goal,
+          }
+        });
+      }
+    }
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'User updated',
+      data: {
+        user: result,
+        body: bodyHistory
+      },
+      code: HttpStatus.OK,
+    }
+  }
+
+  async delete(firebseId: string) {
+    //check if user already exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: firebseId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const result = await this.prisma.user.delete({
+      where: { 
+        firebaseId: firebseId
+       },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'User deleted',
+      data: result,
+      code: HttpStatus.OK,
+    }
+  }
+
+  async get(firebseId: string) {
+    //check if user exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: firebseId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'User found',
+      data: user,
+      code: HttpStatus.OK,
+    }
+  }
+
+  async createTeacher(createTeacherDto: createTeacherDto) {
+    //check if user already exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: createTeacherDto.firebaseId,
+      },
+    });
+
+    if (!user) {
+      return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+      }
+    }
+
+    //check if teacher already exists
+    const teacher = await this.prisma.teacher.findFirst({
+        where: {
+            userId: user.id,
+        },
+    });
+
+    if (teacher) {
+      return {
+            success: false,
+            type: 'failed',
+            message: 'Teacher already exists',
+            code: HttpStatus.FOUND
+         }
+    }
+
+    try{
+        const result = await this.prisma.teacher.create({
+            data: {
+                userId: user.id,
+                description: createTeacherDto.description,
+            },
+          });
+      
+          return {
+            success: true,
+            type: 'success',
+            message: 'Teacher created',
+            data: result,
+            code: HttpStatus.CREATED,
+          }
+    } catch (error) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'Error creating user',
+            error: error,
+            code: HttpStatus.INTERNAL_SERVER_ERROR
+         }
+    }
+  }
+
+  async updateTeacher(id: string, updateTeacher: updateTeacherDto) {
+    const find_user = await this.prisma.user.findUnique({
+        where: {
+            firebaseId: id,
+        },
+    });
+
+    if (!find_user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    //check if user already exists
+    const user = await this.prisma.teacher.findFirst({
+        where: {
+            userId: find_user.id,
+        },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'Teacher does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const result = await this.prisma.teacher.update({
+      where: { id: user.id },
+      data: {
+        description: updateTeacher.description,
+        status: updateTeacher.status ? updateTeacher.status : user.status,
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'Teacher updated',
+      data: result,
+      code: HttpStatus.OK,
+    }
+  }
+
+  async getTeacher(firebseId: string) {
+    //check if user exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: firebseId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const teacher = await this.prisma.teacher.findFirst({
+        where: {
+            userId: user.id
+        },
+    });
+
+    if (!teacher) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'Teacher does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'Teacher found',
+      data: teacher,
+      code: HttpStatus.OK,
+    }
+  }
+
+}
