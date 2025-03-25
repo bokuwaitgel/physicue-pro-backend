@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto, createTeacherDto, updateTeacherDto } from './users.dto';
+import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto,logoutUserDto} from './users.dto';
 
 @Injectable()
 export class UsersService {
@@ -72,6 +72,64 @@ export class UsersService {
             code: HttpStatus.INTERNAL_SERVER_ERROR
          }
     }
+  }
+
+  async login(loginUserDto: loginUserDto) {
+    //check if user already exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: loginUserDto.firebaseId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const update = await this.prisma.user.update({
+      where: { firebaseId: loginUserDto.firebaseId },
+      data: {
+        firebaseToken: loginUserDto.firebaseToken,
+        fcmToken: loginUserDto.fcmToken,
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'User found',
+      data: update,
+      code: HttpStatus.OK
+    }
+  }
+
+  async logout(logoutUserDto: logoutUserDto) {
+    //check if user already exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: logoutUserDto.firebaseId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const result = await this.prisma.user.update({
+      where: { firebaseId: logoutUserDto.firebaseId },
+      data: {
+        firebaseToken: '',
+        fcmToken: '',
+      },
+    });
   }
 
   async update(id: string, updateUserDto: Partial<CreateUserDto>) {

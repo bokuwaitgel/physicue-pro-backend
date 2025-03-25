@@ -59,6 +59,24 @@ export class CreateUserDto {
     body: BodyDto;
 }
 
+export class loginUserDto {
+    @IsNotEmpty()
+    @ApiProperty()
+    firebaseId: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    fcmToken: string;
+    @ApiProperty()
+    @IsNotEmpty()
+    firebaseToken: string;
+}
+
+export class logoutUserDto {
+    @IsNotEmpty()
+    @ApiProperty()
+    firebaseId: string;
+}
+
 export class createTeacherDto {
     @IsNotEmpty()
     @ApiProperty()

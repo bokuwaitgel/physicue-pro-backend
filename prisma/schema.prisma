@@ -15,8 +15,8 @@ datasource db {
 
 model User {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  firstName          String
-  lastName           String 
+  firstName          String?
+  lastName           String?
   email              String   @unique
   profileImage       String   @default("")
   address            String   @default("")
@@ -26,7 +26,7 @@ model User {
   instagramAcc       String   @default("")
 
   firebaseId         String   @unique
-  firebaseToken      String   @unique
+  firebaseToken      String   @default("")
   fcmToken           String   @default("")
 
   pushToken          String   @default("")
