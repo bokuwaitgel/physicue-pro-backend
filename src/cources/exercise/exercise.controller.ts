@@ -58,4 +58,11 @@ export class ExerciseController {
     return this.exerciseService.addExerciseToCourse(data);
   }
 
+  @Get('getPopularExercises')
+  @ApiOperation({ summary: 'Get popular exercises' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  getPopularExercises(){
+    return this.exerciseService.getPopularExercises();
+  }
+
 }
