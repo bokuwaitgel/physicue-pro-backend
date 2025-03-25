@@ -61,4 +61,9 @@ export class GroupsController {
     getCourse(@Param('groupId') groupId: string) {
         return this.groupsService.getGroups(groupId);
     }
+
+    @Get('')
+    getAllGroups() {
+        return this.groupsService.getGroup();
+    }
 }

@@ -500,4 +500,15 @@ export class GroupsService {
             code: HttpStatus.OK,
         }
     }
+
+    async getGroup(){
+        const groups = await this.prisma.group.findMany( );
+        return {
+            success: true,
+            type: 'success',
+            message: 'Groups fetched',
+            data: groups,
+            code: HttpStatus.OK,
+        }
+    }
 }
