@@ -27,6 +27,7 @@ export class UsersService {
             data: {
               firebaseId: createUserDto.firebaseId,
               firebaseToken: createUserDto.firebaseToken,
+              fcmToken: createUserDto.fcmToken,
               firstName: createUserDto.firstName,
               lastName: createUserDto.lastName,
               email: createUserDto.email,
@@ -93,6 +94,7 @@ export class UsersService {
       where: { firebaseId: id },
       data: {
         firebaseToken: updateUserDto.firebaseToken,
+        fcmToken: updateUserDto.fcmToken,
         firstName: updateUserDto.firstName,
         lastName: updateUserDto.lastName,
         email: updateUserDto.email,
@@ -341,6 +343,21 @@ export class UsersService {
       type: 'success',
       message: 'Teacher found',
       data: teacher,
+      code: HttpStatus.OK,
+    }
+  }
+  // get teachers
+  async getTeachers() {
+    const teachers = await this.prisma.teacher.findMany({
+      where: {
+        status: 'active'
+      }
+    });
+    return {
+      success: true,
+      type: 'success',
+      message: 'Teachers found',
+      data: teachers,
       code: HttpStatus.OK,
     }
   }

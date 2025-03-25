@@ -33,6 +33,9 @@ export class CreateUserDto {
     firebaseToken: string;
     @IsNotEmpty()
     @ApiProperty()
+    fcmToken: string;
+    @IsNotEmpty()
+    @ApiProperty()
     firstName: string;
     @IsNotEmpty()
     @ApiProperty()

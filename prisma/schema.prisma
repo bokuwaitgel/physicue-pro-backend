@@ -27,6 +27,7 @@ model User {
 
   firebaseId         String   @unique
   firebaseToken      String   @unique
+  fcmToken           String   @default("")
 
   pushToken          String   @default("")
   refreshToken       String?
@@ -43,6 +44,8 @@ model User {
   EventComment     EventComment[]
 
   Story Story[]
+
+  EventLike EventLike[]
 }
 
 //   Personal         Personal?
@@ -217,10 +220,24 @@ model Event {
   group       Group    @relation(fields: [groupId], references: [id])
   groupId     String   @db.ObjectId
 
-
+  EventLike    EventLike[]
   EventComment EventComment[]
 
   @@index([groupId])
+}
+
+model EventLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId   String   @db.ObjectId
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([eventId])
+  @@index([userId])
 }
 
 model EventComment {
