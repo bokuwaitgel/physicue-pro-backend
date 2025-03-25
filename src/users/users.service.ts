@@ -351,6 +351,9 @@ export class UsersService {
     const teachers = await this.prisma.teacher.findMany({
       where: {
         status: 'active'
+      },
+      orderBy: {
+        rating: 'desc'
       }
     });
     return {
@@ -361,5 +364,52 @@ export class UsersService {
       code: HttpStatus.OK,
     }
   }
+
+  // get user groups
+  async getUserGroups(firebseId: string) {
+    //check if user exists
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: firebseId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const userGroups = await this.prisma.groupMembers.findMany({
+        where: {
+            userId: user.id,
+            status: 'active',
+            Role: "member"
+        },
+    });
+
+    const groups: Array<{ id: string; description: string; status: string; createdAt: Date; updatedAt: Date; name: string; bannerImage: string; requirements: string; adminId: string; }> = [];
+    for (const group of userGroups) {
+      const groupData = await this.prisma.group.findUnique({
+        where: {
+          id: group.groupId
+        }
+      });
+      if (groupData) {
+        groups.push(groupData);
+    }
+
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'User groups found',
+      data: groups,
+      code: HttpStatus.OK,
+    }
+  }
+}
 
 }

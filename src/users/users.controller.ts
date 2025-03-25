@@ -41,6 +41,11 @@ export class UsersController {
         return this.usersService.updateTeacher(id, updateTeacherDto);
     }
 
+    @Get('teachers')
+    getTeachers() {
+        return this.usersService.getTeachers();
+    }
+
 
 
 }
