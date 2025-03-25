@@ -21,17 +21,17 @@ export class UsersController {
         return this.usersService.logout(logoutUserDto);
     }
 
-    @Delete(':id')
+    @Delete('delete/:id')
     delete(@Param('id') id: string) {
         return this.usersService.delete(id);
     }
 
-    @Get(':id')
+    @Get('get/:id')
     findUser(@Param('id') id: string) {
         return this.usersService.get(id);
     }
 
-    @Put(':id')
+    @Put('edit/:id')
     update(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
         return this.usersService.update(id, updateUserDto);
     }
