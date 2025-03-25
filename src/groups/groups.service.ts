@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateGroupDto,UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto } from './group.dto';
+import { CreateGroupDto,UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto, GroupCourseDto } from './group.dto';
 import { stat } from 'fs';
 
 @Injectable()
@@ -378,4 +378,126 @@ export class GroupsService {
         }
     }
 
+
+    async addCourseToGroup(data: GroupCourseDto) {
+        //check in groupCourses if course already exists
+        const groupCourse = await this.prisma.groupCourses.findFirst({
+            where: {
+                groupId: data.groupId,
+                courseId: data.courseId,
+            },
+        });
+
+        if (groupCourse) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Course already exists in group',
+                code: HttpStatus.CONFLICT,
+            }
+        }
+
+        //check if group exists
+        const group = await this.prisma.group.findUnique({
+            where: {
+                id: data.groupId,
+            },
+        });
+        if (!group) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Group not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const course = await this.prisma.courses.findUnique({
+            where: {
+                id: data.courseId,
+            },
+        });
+        if (!course) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Course not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        try {
+            const result = await this.prisma.groupCourses.create({
+                data: {
+                    status: data.status,
+                    course: {
+                        connect: {
+                            id: data.courseId,
+                        }
+                    },
+                    group: {
+                        connect: {
+                            id: data.groupId,
+                        }
+                    }
+                }
+            });
+    
+            return {
+                success: true,
+                type: 'success',
+                message: 'Course added to group',
+                data: result,
+                code: HttpStatus.CREATED,
+            }
+        } catch (error) {
+            return {
+                success: false,
+                type: 'error',
+                message: error.message,
+                code: HttpStatus.INTERNAL_SERVER_ERROR,
+            }
+        }
+    }
+    
+    async getGroupCourses(groupId: string) {
+        //check if group exists
+        const group = await this.prisma.group.findUnique({
+            where: {
+                id: groupId,
+            },
+        });
+        if (!group) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Group not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const courses = await this.prisma.groupCourses.findMany({
+            where: {
+                groupId,
+            },
+        });
+
+        const courseIds = courses.map(course => course.courseId);
+
+        const course_data = await this.prisma.courses.findMany({
+            where: {
+                id: {
+                    in: courseIds,
+                }
+            },
+        });
+
+        return {
+            success: true,
+            type: 'success',
+            message: 'Group courses fetched',
+            data: course_data,
+            code: HttpStatus.OK,
+        }
+    }
 }

@@ -53,5 +53,12 @@ export class CourseController {
     return this.courseService.deleteCourse(data);
   }
 
-  
+
+  @Get('getCourseDetails/:courseId')
+  @ApiOperation({ summary: 'Get course details' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  getCourseDetails(@Param('courseId') courseId: string){
+    return this.courseService.getCourseDetails(courseId);
+  }
+
 }

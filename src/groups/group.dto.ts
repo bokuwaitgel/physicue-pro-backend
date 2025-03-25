@@ -83,3 +83,15 @@ export class GroupMemberDto {
     @ApiProperty()
     status: string;
 }
+
+export class GroupCourseDto {
+    @IsNotEmpty()
+    @ApiProperty()
+    groupId: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    courseId: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    status: string;
+}

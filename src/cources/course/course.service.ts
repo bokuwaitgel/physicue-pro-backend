@@ -161,4 +161,44 @@ export class CourseService {
     }
   }
 
+
+  async getCourseDetails(courseId: string) : Promise<unknown> {
+    const res = await this.prisma.courses.findFirst({
+      where: {
+        id: courseId
+      }
+    });
+
+    const exercise_ids = await this.prisma.courseExercises.findMany({
+      where: {
+        courseId: courseId
+      }
+    });
+
+    const course_exercises: Array<{ id: string; description: string; status: string; teacherId: string; createdAt: Date; updatedAt: Date; name: string; purpose: string; duration: number; level: string; type: string; image: string; video: string; }> = [];
+    for(let i = 0; i < exercise_ids.length; i++)
+    {
+      const exercise = await this.prisma.exercises.findUnique({
+        where: {
+          id: exercise_ids[i].exerciseId
+        }
+      });
+      if (!exercise) {
+        continue;
+      }
+      course_exercises.push(exercise);
+    }
+
+
+    return {
+      status: true,
+      type: 'success',
+      message: 'Course details fetched',
+      code : HttpStatus.OK,
+      data: {
+        course: res,
+        exercises: course_exercises
+      }
+    }
+  }
 }

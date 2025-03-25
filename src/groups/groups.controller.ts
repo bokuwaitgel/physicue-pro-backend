@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { GroupsService } from './groups.service';
-import { CreateGroupDto, UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto } from './group.dto';
+import { CreateGroupDto, UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto , GroupCourseDto} from './group.dto';
+import { get } from 'http';
 
 @Controller('groups')
 export class GroupsController {
@@ -48,5 +49,16 @@ export class GroupsController {
     @Put('member/update/:id')
     updateMember(@Param('id') id: string, @Body() groupMemberDto: GroupMemberDto) {
         return this.groupsService.updateGroupMember(id, groupMemberDto);
+    }
+
+    //course
+    @Post('group/course')
+    addCourse(@Body() groupCourseDto: GroupCourseDto) {
+        return this.groupsService.addCourseToGroup(groupCourseDto);
+    }
+
+    @Get('group/course/:groupId')
+    getCourse(@Param('groupId') groupId: string) {
+        return this.groupsService.getGroups(groupId);
     }
 }
