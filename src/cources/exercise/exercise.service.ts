@@ -202,7 +202,6 @@ export class ExerciseService {
 
   async getPopularExercises() {
     return this.prisma.exercises.findMany({
-      take: 0,
       orderBy: {
         createdAt: 'desc'
       }
