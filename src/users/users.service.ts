@@ -130,6 +130,13 @@ export class UsersService {
         fcmToken: '',
       },
     });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'User logged out',
+      code: HttpStatus.OK
+    }
   }
 
   async update(id: string, updateUserDto: Partial<CreateUserDto>) {
