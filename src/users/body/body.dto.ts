@@ -19,6 +19,10 @@ export class CreateBodyDto {
   bodyIssue: string;
   @ApiProperty()
   goal: string;
+  @ApiProperty()
+  workoutRepeat: string;
+  @ApiProperty()
+  gender: string;
 }
 
 export class UpdateBodyDto {
@@ -38,5 +42,9 @@ export class UpdateBodyDto {
   bodyIssue: string;
   @ApiProperty()
   goal: string;
+  @ApiProperty()
+  workoutRepeat: string;
+  @ApiProperty()
+  gender: string;
 }
 

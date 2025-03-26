@@ -35,7 +35,9 @@ export class BodyService {
         birthDate: body.birthDate,
         bodyIssue: body.bodyIssue,
         userId: user.id,
-        goal: body.goal
+        goal: body.goal,
+        workoutRepeat: body.workoutRepeat,
+        gender: body.gender
       }
 
     });

@@ -74,18 +74,20 @@ model Teacher {
 }
 
 model BodyHistory {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  weight     Float
-  height     Float
-  bodyType   String
-  age        Int
-  goal       String 
-  bodyIssue  String
-  birthDate  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  User       User    @relation(fields: [userId], references: [id])
-  userId     String  @db.ObjectId
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  weight        Float?
+  height        Float?
+  bodyType      String?
+  age           Int?
+  goal          String? 
+  gender        String?
+  bodyIssue     String?
+  birthDate     DateTime?
+  workoutRepeat String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  User          User    @relation(fields: [userId], references: [id])
+  userId        String  @db.ObjectId
 }
 
 model SleepHistory {
