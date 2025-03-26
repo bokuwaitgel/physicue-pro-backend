@@ -58,8 +58,10 @@ export class UsersService {
             type: 'success',
             message: 'User created',
             data: {
-              ...result,
-              persona: body
+              user: {
+                ...result,
+                persona: body
+              }
             },
             code: HttpStatus.CREATED,
           }
@@ -98,11 +100,22 @@ export class UsersService {
       },
     });
 
+    const body = await this.prisma.bodyHistory.findFirst({
+      where: {
+        userId: user.id
+      }
+    });
+
     return {
       success: true,
       type: 'success',
       message: 'User found',
-      data: update,
+      data: {
+        user: {
+          ...update,
+          persona: body
+        }
+      },
       code: HttpStatus.OK
     }
   }
@@ -202,8 +215,10 @@ export class UsersService {
       type: 'success',
       message: 'User updated',
       data: {
-        ...result,
-        persona: bodyHistory
+        user:{
+          ...result,
+          persona: bodyHistory
+        }
       },
       code: HttpStatus.OK,
     }
@@ -256,11 +271,22 @@ export class UsersService {
          }
     }
 
+    const body = await this.prisma.bodyHistory.findFirst({
+      where: {
+        userId: user.id
+      }
+    });
+
     return {
       success: true,
       type: 'success',
       message: 'User found',
-      data: user,
+      data: {
+        user: {
+          ...user,
+          persona: body
+        }
+      },
       code: HttpStatus.OK,
     }
   }
