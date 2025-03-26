@@ -58,8 +58,8 @@ export class UsersService {
             type: 'success',
             message: 'User created',
             data: {
-              user: result,
-              body: body
+              ...result,
+              persona: body
             },
             code: HttpStatus.CREATED,
           }
@@ -202,8 +202,8 @@ export class UsersService {
       type: 'success',
       message: 'User updated',
       data: {
-        user: result,
-        body: bodyHistory
+        ...result,
+        persona: bodyHistory
       },
       code: HttpStatus.OK,
     }
