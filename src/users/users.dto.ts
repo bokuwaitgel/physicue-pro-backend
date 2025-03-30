@@ -94,4 +94,12 @@ export class updateTeacherDto {
     status: string;
 }
 
+export class FileUploadDto {
+    @IsNotEmpty()
+    @ApiProperty()
+    firebaseId: string;
+    @IsNotEmpty()
+    @ApiProperty({ type: 'string', format: 'binary', required: true })
+    file: Express.Multer.File;
+  }
 

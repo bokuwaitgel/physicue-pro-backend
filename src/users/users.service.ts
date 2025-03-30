@@ -1,6 +1,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto,logoutUserDto} from './users.dto';
+import { AwsS3Service } from 'src/s3.service';
+import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto} from './users.dto';
 
 @Injectable()
 export class UsersService {
@@ -501,6 +502,53 @@ export class UsersService {
       code: HttpStatus.OK,
     }
   }
-}
+  }
 
+  // upload profile image to s3 bucket
+  async uploadProfileImage(firebaseId: string, data: any) {
+    const s3 = new AwsS3Service();
+    const user = await this.prisma.user.findUnique({
+      where: {
+        firebaseId: firebaseId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+
+
+    try {
+      const result = await s3.uploadProfileImage(data);
+      const update = await this.prisma.user.update({
+        where: { firebaseId: firebaseId },
+        data: {
+          profileImage: result,
+        },
+      });
+  
+      return {
+        success: true,
+        type: 'success',
+        message: 'Profile image uploaded',
+        data: update,
+        code: HttpStatus.OK,
+      }
+    }
+    catch (error) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Error uploading image',
+        error: error,
+        code: HttpStatus.INTERNAL_SERVER_ERROR
+      }
+    }
+  }
+  
 }

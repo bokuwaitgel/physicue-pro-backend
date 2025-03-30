@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto } from './users.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto,FileUploadDto } from './users.dto';
+import { ApiConsumes } from '@nestjs/swagger';
 
 @Controller('user')
 export class UsersController {
@@ -56,6 +58,12 @@ export class UsersController {
         return this.usersService.getTeachers();
     }
 
-
-
+    @Post('uploadProfileImage/:id')
+    @UseInterceptors(FileInterceptor('file'))
+    uploadProfileImage(
+        @UploadedFile() file: Express.Multer.File,
+        @Param('id') id: string
+    ) {
+        return this.usersService.uploadProfileImage(id, file);
+    }
 }

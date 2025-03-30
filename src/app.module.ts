@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { GroupsModule } from './groups/groups.module';
 import { CourcesService } from './cources/cources.service';
 import { CourcesModule } from './cources/cources.module';
+import { AwsS3Service } from './s3.service';
 import config from './config';
 
 @Module({
@@ -22,6 +23,6 @@ import config from './config';
     CourcesModule
   ],
   controllers: [AppController],
-  providers: [AppService, CourcesService, ],
+  providers: [AppService, CourcesService, AwsS3Service],
 })
 export class AppModule {}
