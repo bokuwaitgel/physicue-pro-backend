@@ -534,6 +534,19 @@ export class GroupsService {
                 groupId,
             },
         });
+        
+        const courseIds = groupCourses.map(course => course.courseId);
+
+        const groupCoursesData = await this.prisma.courses.findMany({
+            where: {
+                id: {
+                    in: courseIds,
+                }
+            },
+        });
+
+
+
 
         return {
             success: true,
@@ -541,7 +554,7 @@ export class GroupsService {
             message: 'Group fetched',
             data: {
                 ...group,
-                courses: groupCourses,
+                courses: groupCoursesData,
             },
             code: HttpStatus.OK,
         }
