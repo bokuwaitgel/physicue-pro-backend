@@ -253,6 +253,13 @@ export class CourseService {
           bannerImage: res
         }
       });
+      return {
+        status: true,
+        type: 'success',
+        message: 'Image uploaded',
+        data: update,
+        code : HttpStatus.OK,
+      }
     }
     catch(e){
       return {
@@ -297,6 +304,14 @@ export class CourseService {
           shortVideo: res
         }
       });
+
+      return {
+        status: true,
+        type: 'success',
+        message: 'Video uploaded',
+        data: update,
+        code : HttpStatus.OK,
+      }
     }
     catch(e){
       return {
