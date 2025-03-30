@@ -46,8 +46,6 @@ model User {
   Story Story[]
 
   EventLike EventLike[]
-
-  ExerciseExpire ExerciseExpire[]
 }
 
 //   Personal         Personal?
@@ -280,15 +278,17 @@ model Courses {
   title       String
   description String
 
+  duration    Int
+
   bannerImage String
   shortVideo  String
 
   status      String  @default("active")
 
-  teacherId String @db.ObjectId
+  teacherId   String @db.ObjectId
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   teacher Teacher @relation(fields: [teacherId], references: [id])
 
@@ -322,6 +322,7 @@ model Exercises {
   description String @default("")
   purpose     String @default("")
   duration    Int
+  day         Int
 
   level       String @default("beginner")
   type        String @default("cardio")
@@ -338,27 +339,7 @@ model Exercises {
   teacher Teacher @relation(fields: [teacherId], references: [id])
 
   courseExercises   CourseExercises[]
-
-  @@index([teacherId])
-  ExerciseExpire ExerciseExpire[]
 }
-
-model ExerciseExpire {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  exerciseId String   @db.ObjectId
-  startTime  DateTime
-  endTime    DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  user     User      @relation(fields: [userId], references: [id])
-  exercise Exercises @relation(fields: [exerciseId], references: [id])
-
-  @@index([userId])
-  @@index([exerciseId])
-}
-
 
 model CourseEnrollment {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId

@@ -1,5 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AwsS3Service } from 'src/s3.service';
 
 //dtos
 import { 
@@ -27,6 +28,7 @@ export class CourseService {
           description: data.description,
           bannerImage: data.bannerImage,
           shortVideo: data.shortVideo,
+          duration: data.duration,
           teacher: {
             connect: {
               id: data.teacherId
@@ -114,6 +116,7 @@ export class CourseService {
         description: data.description,
         bannerImage: data.bannerImage,
         shortVideo: data.shortVideo,
+        duration: data.duration,
         teacher: {
           connect: {
             id: data.teacherId
@@ -160,7 +163,6 @@ export class CourseService {
       }
     }
   }
-
 
   async getCourseDetails(courseId: string) : Promise<unknown> {
     const res = await this.prisma.courses.findFirst({
@@ -217,4 +219,93 @@ export class CourseService {
       data: res
     }
   }
+
+  async uploadCourseImage(courseId: string, image: any){
+    const s3 = new AwsS3Service();
+    const cource = await this.prisma.courses.findUnique({
+      where: {
+        id: courseId
+      }
+    });
+    if(!cource){
+      return {
+        status: false,
+        type: 'error',
+        message: 'Course not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+    try {
+      const res = await s3.uploadFile(image);
+      if(!res){
+        return {
+          status: false,
+          type: 'error',
+          message: 'Image not uploaded',
+          code : HttpStatus.BAD_REQUEST,
+        }
+      }
+      const update = await this.prisma.courses.update({
+        where: {
+          id: courseId
+        },
+        data: {
+          bannerImage: res
+        }
+      });
+    }
+    catch(e){
+      return {
+        status: false,
+        type: 'error',
+        message: e.message,
+        code : HttpStatus.BAD_REQUEST,
+      }
+    }
+  }
+
+  async uploadShortVideo(courseId: string, video: any){
+    const s3 = new AwsS3Service();
+    const cource = await this.prisma.courses.findUnique({
+      where: {
+        id: courseId
+      }
+    });
+    if(!cource){
+      return {
+        status: false,
+        type: 'error',
+        message: 'Course not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+    try {
+      const res = await s3.uploadFile(video);
+      if(!res){
+        return {
+          status: false,
+          type: 'error',
+          message: 'Video not uploaded',
+          code : HttpStatus.BAD_REQUEST,
+        }
+      }
+      const update = await this.prisma.courses.update({
+        where: {
+          id: courseId
+        },
+        data: {
+          shortVideo: res
+        }
+      });
+    }
+    catch(e){
+      return {
+        status: false,
+        type: 'error',
+        message: e.message,
+        code : HttpStatus.BAD_REQUEST,
+      }
+    }
+  }
+
 }

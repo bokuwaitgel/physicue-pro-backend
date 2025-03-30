@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post,  Param, Put, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Post,  Param, Put, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { ExerciseService } from './exercise.service';
@@ -10,6 +10,7 @@ import {
   deleteExerciseDto,
   addExerciseToCourseDto
 } from './exercise.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('exercise')
 @Controller('exercise')
@@ -58,11 +59,29 @@ export class ExerciseController {
     return this.exerciseService.addExerciseToCourse(data);
   }
 
-  // @Get('getPopularExercises')
-  // @ApiOperation({ summary: 'Get popular exercises' })
-  // @ApiResponse({ status: 200, description: 'Data' })
-  // getPopularExercises(){
-  //   return this.exerciseService.getPopularExercises();
-  // }
+  @Get('getPopularExercises')
+  @ApiOperation({ summary: 'Get popular exercises' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  getPopularExercises(){
+    return this.exerciseService.getPopularExercises();
+  }
+
+  @Post('uploadExerciseImage/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadProfileImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    return this.exerciseService.uploadExerciseImage(id, file);
+  }
+
+  @Post('uploadExerciseVideo/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadExerciseVideo(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    return this.exerciseService.uploadExerciseVideo(id, file);
+  }
 
 }

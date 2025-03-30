@@ -14,6 +14,9 @@ export class CreateExerciseDto {
   @IsNotEmpty()
   @ApiProperty()
   duration: number;
+  @IsNotEmpty()
+  @ApiProperty()
+  day: number;
 
   @IsNotEmpty()
   @ApiProperty()
@@ -37,22 +40,37 @@ export class CreateExerciseDto {
 export class UpdateExerciseDto {
   @IsNotEmpty()
   @ApiProperty()
-  id: string;
-  @IsNotEmpty()
-  @ApiProperty()
   name: string;
   @IsNotEmpty()
   @ApiProperty()
   description: string;
   @IsNotEmpty()
   @ApiProperty()
+  purpose: string;
+  @IsNotEmpty()
+  @ApiProperty()
+  duration: number;
+  @IsNotEmpty()
+  @ApiProperty()
+  day: number;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  level: string;  // beginner, intermediate, advanced
+  @IsNotEmpty()
+  @ApiProperty()
+  type : string; // strength, cardio, flexibility
+
+  @IsNotEmpty()
+  @ApiProperty()
   image: string;
   @IsNotEmpty()
   @ApiProperty()
   video: string;
+
   @IsNotEmpty()
   @ApiProperty()
-  type: string;
+  teacherId: string;
 }
 
 export class deleteExerciseDto {

@@ -17,6 +17,9 @@ export class CreateCourseDto {
   @IsNotEmpty()
   @ApiProperty()
   teacherId: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  duration: number;
 }
 
 
@@ -39,6 +42,9 @@ export class UpdateCourseDto {
   @IsNotEmpty()
   @ApiProperty()
   teacherId: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  duration: number;
 }
 
 export class deleteCourseDto {

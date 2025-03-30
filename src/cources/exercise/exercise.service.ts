@@ -1,5 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AwsS3Service } from 'src/s3.service';
 //dtos
 import { 
   CreateExerciseDto,
@@ -22,6 +23,7 @@ export class ExerciseService {
           description: data.description,
           purpose: data.purpose,
           duration: data.duration,
+          day: data.day,
           level: data.level,
           image: data.image,
           video: data.video,
@@ -63,6 +65,9 @@ export class ExerciseService {
       {
         where: {
           teacherId: teacherId
+        },
+        orderBy: {
+          day: 'asc'
         }
       }
     );
@@ -91,7 +96,7 @@ export class ExerciseService {
     }
   }
 
-  async updateExercise(exerciseId, data: UpdateExerciseDto) : Promise<unknown> {
+  async updateExercise(exerciseId: string, data: UpdateExerciseDto) : Promise<unknown> {
     const find = await this.prisma.exercises.findUnique({
       where: {
         id: exerciseId
@@ -112,11 +117,18 @@ export class ExerciseService {
       data: {
         name: data.name,
         description: data.description,
+        purpose: data.purpose,
+        duration: data.duration,
+        day: data.day,
+        level: data.level,
+        type: data.type,
         image: data.image,
-        video: data.video,
-        type: data.type
+        video: data.video
       }
     });
+
+
+
     return {
       status: true,
       type: 'success',
@@ -215,4 +227,97 @@ export class ExerciseService {
       data: data
     }
   }
+
+  async uploadExerciseImage(exirciseId: string, file: Express.Multer.File) {
+    const s3 = new AwsS3Service();
+    const exercise = this.prisma.exercises.findUnique({
+      where: {
+        id: exirciseId
+      }
+    });
+    if(!exercise) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Exercise not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+
+    try {
+      const res = await s3.uploadFile(file);
+      const update = this.prisma.exercises.update({
+        where: {
+          id: exirciseId
+        },
+        data: {
+          image: res
+        }
+      });
+
+      return {
+        status: true,
+        type: 'success',
+        message: 'Image uploaded',
+        code : HttpStatus.OK,
+        data: update
+      }
+
+    }
+    catch(e) {
+      return {
+        status: false,
+        type: 'error',
+        message: e.message,
+        code : HttpStatus.BAD_REQUEST,
+      }
+    }
+  }
+
+  async uploadExerciseVideo(exirciseId: string, file: Express.Multer.File) {
+    const s3 = new AwsS3Service();
+    const exercise = this.prisma.exercises.findUnique({
+      where: {
+        id: exirciseId
+      }
+    });
+    if(!exercise) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Exercise not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+
+    try {
+      const res = await s3.uploadFile(file);
+      const update = this.prisma.exercises.update({
+        where: {
+          id: exirciseId
+        },
+        data: {
+          video: res
+        }
+      });
+
+      return {
+        status: true,
+        type: 'success',
+        message: 'Video uploaded',
+        code : HttpStatus.OK,
+        data: update
+      }
+
+    }
+    catch(e) {
+      return {
+        status: false,
+        type: 'error',
+        message: e.message,
+        code : HttpStatus.BAD_REQUEST,
+      }
+    }
+  }
+
 }

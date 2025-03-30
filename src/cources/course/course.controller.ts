@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Param } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { CourseService } from './course.service';
@@ -12,6 +12,7 @@ import {
   UpdateCourseDetailDto,
   deleteCourseDetailDto,
 } from './course.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('course')
 @Controller('course')
@@ -68,5 +69,25 @@ export class CourseController {
   getPopularCourses(){
     return this.courseService.getPopularCourses();
   }
+
+  @Post('uploadCourseBanner/:courseId')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadProfileImage(
+      @UploadedFile() file: Express.Multer.File,
+      @Param('courseId') id: string
+  ) {
+      return this.courseService.uploadCourseImage(id, file);
+  }
+
+  @Post('uploadShortVideo/:courseId')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadShortVideo(
+      @UploadedFile() file: Express.Multer.File,
+      @Param('courseId') id: string
+  ) {
+      return this.courseService.uploadShortVideo(id, file);
+  }
+  
+
 
 }
