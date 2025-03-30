@@ -291,7 +291,7 @@ export class ExerciseService {
     }
 
     try {
-      const res = await s3.uploadFile(file);
+      const res = await s3.uploadWorkoutVideo(file);
       const update = this.prisma.exercises.update({
         where: {
           id: exirciseId

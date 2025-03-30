@@ -287,7 +287,7 @@ export class CourseService {
       }
     }
     try {
-      const res = await s3.uploadFile(video);
+      const res = await s3.uploadWorkoutVideo(video);
       if(!res){
         return {
           status: false,
