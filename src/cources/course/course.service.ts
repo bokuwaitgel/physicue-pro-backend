@@ -201,4 +201,20 @@ export class CourseService {
       }
     }
   }
+
+
+  async getPopularCourses() : Promise<unknown> {
+    const res = await this.prisma.courses.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    return {
+      status: true,
+      type: 'success',
+      message: 'Courses fetched',
+      code : HttpStatus.OK,
+      data: res
+    }
+  }
 }

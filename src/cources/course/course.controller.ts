@@ -61,4 +61,12 @@ export class CourseController {
     return this.courseService.getCourseDetails(courseId);
   }
 
+
+  @Get('getPopularCourses')
+  @ApiOperation({ summary: 'Get popular courses' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  getPopularCourses(){
+    return this.courseService.getPopularCourses();
+  }
+
 }
