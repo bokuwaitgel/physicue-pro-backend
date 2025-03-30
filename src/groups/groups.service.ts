@@ -511,4 +511,38 @@ export class GroupsService {
             code: HttpStatus.OK,
         }
     }
+
+    async getGroupById(groupId: string) {
+        const group = await this.prisma.group.findUnique({
+            where: {
+                id: groupId,
+            },
+        });
+
+        if (!group) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Group not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const groupCourses = await this.prisma.groupCourses.findMany({
+            where: {
+                groupId,
+            },
+        });
+
+        return {
+            success: true,
+            type: 'success',
+            message: 'Group fetched',
+            data: {
+                group,
+                courses: groupCourses,
+            },
+            code: HttpStatus.OK,
+        }
+    }
 }

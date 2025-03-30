@@ -66,4 +66,9 @@ export class GroupsController {
     getAllGroups() {
         return this.groupsService.getGroup();
     }
+
+    @Get('groupDetail/:id')
+    getGroupDetail(@Param('id') id: string) {
+        return this.groupsService.getGroupById(id);
+    }
 }
