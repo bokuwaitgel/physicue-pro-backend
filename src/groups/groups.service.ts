@@ -563,20 +563,30 @@ export class GroupsService {
             }
         }
 
-        const result = await s3.uploadFile(file);
-        const updatedGroup = await this.prisma.group.update({
-            where: { id: groupId },
-            data: {
-                bannerImage: result,
-            }
-        });
+        try{
+            const result = await s3.uploadFile(file);
+            const updatedGroup = await this.prisma.group.update({
+                where: { id: groupId },
+                data: {
+                    bannerImage: result,
+                }
+            });
 
-        return {
-            success: true,
-            type: 'success',
-            message: 'Banner image uploaded',
-            data: updatedGroup,
-            code: HttpStatus.OK,
+            return {
+                success: true,
+                type: 'success',
+                message: 'Banner image uploaded',
+                data: updatedGroup,
+                code: HttpStatus.OK,
+            }
+        }
+        catch(e){
+            return {
+                success: false,
+                type: 'error',
+                message: e.message,
+                code: HttpStatus.BAD_REQUEST,
+            }
         }
     }
 

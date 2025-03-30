@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto, UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto , GroupCourseDto} from './group.dto';
-import { get } from 'http';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('groups')
@@ -75,9 +74,9 @@ export class GroupsController {
 
     @Post('uploadGroupBanner/:id')
     @UseInterceptors(FileInterceptor('file'))
-    uploadGroupBanner(
-        @Param('id') id: string,
-        @Body() file: Express.Multer.File
+    uploadProfileImage(
+        @UploadedFile() file: Express.Multer.File,
+        @Param('id') id: string
     ) {
         return this.groupsService.uploadBannerImage(id, file);
     }
