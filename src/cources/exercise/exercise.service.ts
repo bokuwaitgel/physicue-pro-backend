@@ -230,7 +230,7 @@ export class ExerciseService {
 
   async uploadExerciseImage(exirciseId: string, file: Express.Multer.File) {
     const s3 = new AwsS3Service();
-    const exercise = this.prisma.exercises.findUnique({
+    const exercise = await this.prisma.exercises.findUnique({
       where: {
         id: exirciseId
       }
@@ -246,9 +246,9 @@ export class ExerciseService {
 
     try {
       const res = await s3.uploadFile(file);
-      const update = this.prisma.exercises.update({
+      const update = await this.prisma.exercises.update({
         where: {
-          id: exirciseId
+          id: exercise?.id
         },
         data: {
           image: res
@@ -276,7 +276,7 @@ export class ExerciseService {
 
   async uploadExerciseVideo(exirciseId: string, file: Express.Multer.File) {
     const s3 = new AwsS3Service();
-    const exercise = this.prisma.exercises.findUnique({
+    const exercise = await  this.prisma.exercises.findUnique({
       where: {
         id: exirciseId
       }
@@ -292,7 +292,7 @@ export class ExerciseService {
 
     try {
       const res = await s3.uploadWorkoutVideo(file);
-      const update = this.prisma.exercises.update({
+      const update = await this.prisma.exercises.update({
         where: {
           id: exirciseId
         },
