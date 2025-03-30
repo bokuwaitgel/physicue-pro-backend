@@ -201,10 +201,18 @@ export class ExerciseService {
   }
 
   async getPopularExercises() {
-    return this.prisma.exercises.findMany({
+    const data = await this.prisma.exercises.findMany({
       orderBy: {
         createdAt: 'desc'
       }
-    });
+    })
+
+    return {
+      status: true,
+      type: 'success',
+      message: 'Exercises fetched',
+      code : HttpStatus.OK,
+      data: data
+    }
   }
 }
