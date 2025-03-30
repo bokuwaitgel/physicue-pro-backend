@@ -1,5 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AwsS3Service } from 'src/s3.service';
 import { CreateGroupDto,UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto, GroupCourseDto } from './group.dto';
 import { stat } from 'fs';
 
@@ -545,4 +546,38 @@ export class GroupsService {
             code: HttpStatus.OK,
         }
     }
+
+    async uploadBannerImage(groupId: string, file: Express.Multer.File) {
+        const s3 = new AwsS3Service();
+        const group = this.prisma.group.findUnique({
+            where: {
+                id: groupId,
+            }
+        });
+        if (!group) {
+            return {
+                success: false,
+                type: 'failed',
+                message: 'Group not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const result = await s3.uploadFile(file);
+        const updatedGroup = await this.prisma.group.update({
+            where: { id: groupId },
+            data: {
+                bannerImage: result,
+            }
+        });
+
+        return {
+            success: true,
+            type: 'success',
+            message: 'Banner image uploaded',
+            data: updatedGroup,
+            code: HttpStatus.OK,
+        }
+    }
+
 }
