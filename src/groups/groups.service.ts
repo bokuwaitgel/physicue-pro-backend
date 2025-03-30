@@ -539,7 +539,7 @@ export class GroupsService {
             type: 'success',
             message: 'Group fetched',
             data: {
-                group,
+                ...group,
                 courses: groupCourses,
             },
             code: HttpStatus.OK,

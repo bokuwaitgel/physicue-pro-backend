@@ -198,7 +198,7 @@ export class CourseService {
       message: 'Course details fetched',
       code : HttpStatus.OK,
       data: {
-        course: res,
+        ...res,
         exercises: course_exercises
       }
     }
