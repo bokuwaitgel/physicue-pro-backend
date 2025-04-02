@@ -550,5 +550,12 @@ export class UsersService {
       }
     }
   }
+
+  async findByLogin(email: string): Promise<any> {
+    const user = await this.prisma.user.findFirst({
+      where: { email: email }
+    });
+    return user;
+  }
   
 }

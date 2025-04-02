@@ -8,6 +8,7 @@ import { GroupsModule } from './groups/groups.module';
 import { CourcesService } from './cources/cources.service';
 import { CourcesModule } from './cources/cources.module';
 import { AwsS3Service } from './s3.service';
+import { AuthModule } from './auth/auth.module';
 import config from './config';
 
 @Module({
@@ -20,7 +21,8 @@ import config from './config';
     UsersModule,
     PrismaModule,
     GroupsModule,
-    CourcesModule
+    CourcesModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService, CourcesService, AwsS3Service],
