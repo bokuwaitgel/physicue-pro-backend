@@ -13,6 +13,7 @@ import {
   LoginUserDto,
   ChangePasswordDto,
   ResetPasswordDto,
+  CreateUserDto,
   verifyTokenDto,
 } from './auth.dtos';
 import { JwtPayload } from './jwt.strategy';
@@ -29,7 +30,7 @@ export class AuthService {
   ) {}
 
   async refreshAccessToken(refreshToken: string): Promise<any> {
-    const decoded = jwt.verify(refreshToken, process.env.SECRETKEY) as {mobile: string, exp: number};
+    const decoded = jwt.verify(refreshToken, process.env.SECRETKEY || '') as unknown as {mobile: string, exp: number};
     console.log(decoded.exp)
     decoded.exp *= 1000
     const expireDate = new Date(decoded.exp)
@@ -84,76 +85,6 @@ export class AuthService {
     };
   }
 
-  
-//   async changePassword(userId: string, resetPasswordDto: ResetPasswordDto) : Promise<any> {
-//     let pwd = "";
-//     const user = await this.prisma.user.findUnique({
-//       where: {
-//         id: userId,
-//       },
-//     })
-//     pwd = await bcrypt.hash(resetPasswordDto.currentPassword, user.salt)
-//     if(pwd != user.password){
-//       return {
-//         code: HttpStatus.CONFLICT,
-//         success: 'false',
-//         type: 'failed',
-//         message: 'Одоогийн нууц үг буруу байна.',
-//       };
-//     }
-//     pwd = ""
-//     let salt = ""
-//     await this.usersService.hashPassword(resetPasswordDto.newPassword).then((value) => {
-//       pwd = value.hash;
-//       salt = value.salt;
-//     })
-
-//     await this.prisma.user.update({
-//       where: {
-//         id: userId,
-//       }, 
-//       data: {
-//         password: pwd,
-//         salt: salt,
-//       }
-//     })
-//     return {
-//       code: HttpStatus.OK,
-//       success: true,
-//       type: 'success',
-//     };
-//   }
-//   async resetPassword(changePasswordDto: ChangePasswordDto) : Promise<any> {
-//     const user = await this.usersService.findByLogin(changePasswordDto.mobile);
-//     if (!user) {
-//       return {
-//         code: HttpStatus.CONFLICT,
-//         success: 'false',
-//         type: 'failed',
-//         message: 'user does not exist',
-//       };
-//     }
-//     let pwd = "", salt = "";
-//     await this.usersService.hashPassword(changePasswordDto.newPassword).then((value) => {
-//       pwd = value.hash;
-//       salt = value.salt;
-//     })
-
-//     await this.prisma.user.update({
-//       where: {
-//         id: user.id,
-//       }, 
-//       data: {
-//         password: pwd,
-//         salt: salt,
-//       }
-//     })
-//     return {
-//       code: HttpStatus.OK,
-//       success: true,
-//       type: 'success',
-//     };
-//   }
 
   async login(loginUserDto: LoginUserDto): Promise<any> {
     const user = await this.usersService.findByLogin(loginUserDto.email);
@@ -284,6 +215,81 @@ export class AuthService {
         type: 'failed',
         message: 'invalid token',
       };
+    }
+  }
+
+  async register(createUserDto: CreateUserDto): Promise<any> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: createUserDto.email,
+      },
+    });
+    if (user) {
+      return {
+        code: HttpStatus.CONFLICT,
+        success: 'false',
+        type: 'failed',
+        message: 'user already exists',
+      };
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(createUserDto.password, salt);
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        ...createUserDto,
+        password: hash,
+        salt,
+      },
+    });
+
+    const tokenAccess = await this._createTokenAccess(newUser);
+    const tokenRefresh = await this._createTokenRefresh(newUser);
+    if (!tokenAccess && !tokenRefresh) {
+      return {
+        code: HttpStatus.CONFLICT,
+        success: 'false',
+        type: 'failed',
+        message: 'refresh token or access token creation failed',
+      };
+    }
+
+    const userRes = await this.prisma.user.update({
+      where: {
+        id: newUser.id,
+      },
+      data: {
+        refreshToken: tokenRefresh.refreshToken,
+        refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
+      },
+    });
+
+    //body
+    const body = await this.prisma.bodyHistory.create({
+      data: {
+        weight: createUserDto.body.weight,
+        height: createUserDto.body.height,
+        bodyType: createUserDto.body.bodyType,
+        age: createUserDto.body.age,
+        birthDate: createUserDto.body.birthDate,
+        bodyIssue: createUserDto.body.bodyIssue,
+        goal: createUserDto.body.goal,
+        userId: userRes.id,
+      }
+    });
+
+
+    return {
+      code: HttpStatus.OK,
+      success: 'true',
+      type: 'success',
+      message: 'user created successfully',
+      data: {
+        user: {
+          ...userRes,
+          persona: body
+        }
+      }
     }
   }
 }

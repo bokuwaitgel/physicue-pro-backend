@@ -7,157 +7,157 @@ import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logout
 export class UsersService {
   constructor(public prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
-    //check if user already exists
-    const user = await this.prisma.user.findUnique({
-      where: {
-        firebaseId: createUserDto.firebaseId,
-      },
-    });
-    if (user) {
-      return {
-            success: false,
-            type: 'failed',
-            message: 'User already exists',
-            code: HttpStatus.FOUND
-         }
-    }
+  // async create(createUserDto: CreateUserDto) {
+  //   //check if user already exists
+  //   const user = await this.prisma.user.findUnique({
+  //     where: {
+  //       userId: createUserDto.userId,
+  //     },
+  //   });
+  //   if (user) {
+  //     return {
+  //           success: false,
+  //           type: 'failed',
+  //           message: 'User already exists',
+  //           code: HttpStatus.FOUND
+  //        }
+  //   }
 
-    try{
-        const result = await this.prisma.user.create({
-            data: {
-              firebaseId: createUserDto.firebaseId,
-              firebaseToken: createUserDto.firebaseToken,
-              fcmToken: createUserDto.fcmToken,
-              firstName: createUserDto.firstName,
-              lastName: createUserDto.lastName,
-              email: createUserDto.email,
-              profileImage: createUserDto.profileImage,
-              address: createUserDto.address,
-              mobile: createUserDto.mobile,
+  //   try{
+  //       const result = await this.prisma.user.create({
+  //           data: {
+  //             userId: createUserDto.userId,
+  //             firebaseToken: createUserDto.firebaseToken,
+  //             fcmToken: createUserDto.fcmToken,
+  //             firstName: createUserDto.firstName,
+  //             lastName: createUserDto.lastName,
+  //             email: createUserDto.email,
+  //             profileImage: createUserDto.profileImage,
+  //             address: createUserDto.address,
+  //             mobile: createUserDto.mobile,
 
-              facebookAcc: createUserDto.facebookAcc,
-              instagramAcc: createUserDto.instagramAcc,
-            }
-          });
+  //             facebookAcc: createUserDto.facebookAcc,
+  //             instagramAcc: createUserDto.instagramAcc,
+  //           }
+  //         });
 
-          const body = await this.prisma.bodyHistory.create({
-            data: {
-              weight: createUserDto.body.weight,
-              height: createUserDto.body.height,
-              bodyType: createUserDto.body.bodyType,
-              age: createUserDto.body.age,
-              birthDate: createUserDto.body.birthDate,
-              bodyIssue: createUserDto.body.bodyIssue,
-              goal: createUserDto.body.goal,
-              userId: result.id,
-            }
-          });
+  //         const body = await this.prisma.bodyHistory.create({
+  //           data: {
+  //             weight: createUserDto.body.weight,
+  //             height: createUserDto.body.height,
+  //             bodyType: createUserDto.body.bodyType,
+  //             age: createUserDto.body.age,
+  //             birthDate: createUserDto.body.birthDate,
+  //             bodyIssue: createUserDto.body.bodyIssue,
+  //             goal: createUserDto.body.goal,
+  //             userId: result.id,
+  //           }
+  //         });
       
-          return {
-            success: true,
-            type: 'success',
-            message: 'User created',
-            data: {
-              user: {
-                ...result,
-                persona: body
-              }
-            },
-            code: HttpStatus.CREATED,
-          }
-    } catch (error) {
-        return {
-            success: false,
-            type: 'failed',
-            message: 'Error creating user',
-            error: error,
-            code: HttpStatus.INTERNAL_SERVER_ERROR
-         }
-    }
-  }
+  //         return {
+  //           success: true,
+  //           type: 'success',
+  //           message: 'User created',
+  //           data: {
+  //             user: {
+  //               ...result,
+  //               persona: body
+  //             }
+  //           },
+  //           code: HttpStatus.CREATED,
+  //         }
+  //   } catch (error) {
+  //       return {
+  //           success: false,
+  //           type: 'failed',
+  //           message: 'Error creating user',
+  //           error: error,
+  //           code: HttpStatus.INTERNAL_SERVER_ERROR
+  //        }
+  //   }
+  // }
 
-  async login(loginUserDto: loginUserDto) {
-    //check if user already exists
-    const user = await this.prisma.user.findUnique({
-      where: {
-        firebaseId: loginUserDto.firebaseId,
-      },
-    });
-    if (!user) {
-        return {
-            success: false,
-            type: 'failed',
-            message: 'User does not exists',
-            code: HttpStatus.NOT_FOUND
-         }
-    }
+  // async login(loginUserDto: loginUserDto) {
+  //   //check if user already exists
+  //   const user = await this.prisma.user.findUnique({
+  //     where: {
+  //       userId: loginUserDto.userId,
+  //     },
+  //   });
+  //   if (!user) {
+  //       return {
+  //           success: false,
+  //           type: 'failed',
+  //           message: 'User does not exists',
+  //           code: HttpStatus.NOT_FOUND
+  //        }
+  //   }
 
-    const update = await this.prisma.user.update({
-      where: { firebaseId: loginUserDto.firebaseId },
-      data: {
-        firebaseToken: loginUserDto.firebaseToken,
-        fcmToken: loginUserDto.fcmToken,
-      },
-    });
+  //   const update = await this.prisma.user.update({
+  //     where: { userId: loginUserDto.userId },
+  //     data: {
+  //       firebaseToken: loginUserDto.firebaseToken,
+  //       fcmToken: loginUserDto.fcmToken,
+  //     },
+  //   });
 
-    const body = await this.prisma.bodyHistory.findFirst({
-      where: {
-        userId: user.id
-      }
-    });
+  //   const body = await this.prisma.bodyHistory.findFirst({
+  //     where: {
+  //       userId: user.id
+  //     }
+  //   });
 
-    return {
-      success: true,
-      type: 'success',
-      message: 'User found',
-      data: {
-        user: {
-          ...update,
-          persona: body
-        }
-      },
-      code: HttpStatus.OK
-    }
-  }
+  //   return {
+  //     success: true,
+  //     type: 'success',
+  //     message: 'User found',
+  //     data: {
+  //       user: {
+  //         ...update,
+  //         persona: body
+  //       }
+  //     },
+  //     code: HttpStatus.OK
+  //   }
+  // }
 
-  async logout(logoutUserDto: logoutUserDto) {
-    //check if user already exists
-    const user = await this.prisma.user.findUnique({
-      where: {
-        firebaseId: logoutUserDto.firebaseId,
-      },
-    });
-    if (!user) {
-        return {
-            success: false,
-            type: 'failed',
-            message: 'User does not exists',
-            code: HttpStatus.NOT_FOUND
-         }
-    }
+  // async logout(logoutUserDto: logoutUserDto) {
+  //   //check if user already exists
+  //   const user = await this.prisma.user.findUnique({
+  //     where: {
+  //       userId: logoutUserDto.userId,
+  //     },
+  //   });
+  //   if (!user) {
+  //       return {
+  //           success: false,
+  //           type: 'failed',
+  //           message: 'User does not exists',
+  //           code: HttpStatus.NOT_FOUND
+  //        }
+  //   }
 
-    const result = await this.prisma.user.update({
-      where: { firebaseId: logoutUserDto.firebaseId },
-      data: {
-        firebaseToken: '',
-        fcmToken: '',
-      },
-    });
+  //   const result = await this.prisma.user.update({
+  //     where: { userId: logoutUserDto.userId },
+  //     data: {
+  //       firebaseToken: '',
+  //       fcmToken: '',
+  //     },
+  //   });
 
-    return {
-      success: true,
-      type: 'success',
-      message: 'User logged out',
-      code: HttpStatus.OK
-    }
-  }
+  //   return {
+  //     success: true,
+  //     type: 'success',
+  //     message: 'User logged out',
+  //     code: HttpStatus.OK
+  //   }
+  // }
 
   async update(id: string, updateUserDto: Partial<CreateUserDto>) {
     //check if user already exists
     const user = await this.prisma.user.findUnique({
       where: {
-        firebaseId: id,
+        id: id,
       },
     });
     if (!user) {
@@ -170,10 +170,8 @@ export class UsersService {
     }
 
     const result = await this.prisma.user.update({
-      where: { firebaseId: id },
+      where: { id: id },
       data: {
-        firebaseToken: updateUserDto.firebaseToken,
-        fcmToken: updateUserDto.fcmToken,
         firstName: updateUserDto.firstName,
         lastName: updateUserDto.lastName,
         email: updateUserDto.email,
@@ -225,11 +223,11 @@ export class UsersService {
     }
   }
 
-  async delete(firebseId: string) {
+  async delete(userId: string) {
     //check if user already exists
     const user = await this.prisma.user.findUnique({
       where: {
-        firebaseId: firebseId,
+        id: userId,
       },
     });
     if (!user) {
@@ -243,7 +241,7 @@ export class UsersService {
 
     const result = await this.prisma.user.delete({
       where: { 
-        firebaseId: firebseId
+        id: userId
        },
     });
 
@@ -256,11 +254,11 @@ export class UsersService {
     }
   }
 
-  async get(firebseId: string) {
+  async get(userId: string) {
     //check if user exists
     const user = await this.prisma.user.findUnique({
       where: {
-        firebaseId: firebseId,
+        id: userId,
       },
     });
     if (!user) {
@@ -296,7 +294,7 @@ export class UsersService {
     //check if user already exists
     const user = await this.prisma.user.findUnique({
       where: {
-        firebaseId: createTeacherDto.firebaseId,
+        id: createTeacherDto.userId,
       },
     });
 
@@ -354,7 +352,7 @@ export class UsersService {
   async updateTeacher(id: string, updateTeacher: updateTeacherDto) {
     const find_user = await this.prisma.user.findUnique({
         where: {
-            firebaseId: id,
+            id: id,
         },
     });
 
@@ -399,11 +397,11 @@ export class UsersService {
     }
   }
 
-  async getTeacher(firebseId: string) {
+  async getTeacher(userId: string) {
     //check if user exists
     const user = await this.prisma.user.findUnique({
       where: {
-        firebaseId: firebseId,
+        id: userId,
       },
     });
     if (!user) {
@@ -458,11 +456,11 @@ export class UsersService {
   }
 
   // get user groups
-  async getUserGroups(firebseId: string) {
+  async getUserGroups(userId: string) {
     //check if user exists
     const user = await this.prisma.user.findUnique({
       where: {
-        firebaseId: firebseId,
+        id: userId,
       },
     });
     if (!user) {
@@ -505,11 +503,11 @@ export class UsersService {
   }
 
   // upload profile image to s3 bucket
-  async uploadProfileImage(firebaseId: string, data: any) {
+  async uploadProfileImage(userId: string, data: any) {
     const s3 = new AwsS3Service();
     const user = await this.prisma.user.findUnique({
       where: {
-        firebaseId: firebaseId,
+        id: userId,
       },
     });
     if (!user) {
@@ -526,7 +524,7 @@ export class UsersService {
     try {
       const result = await s3.uploadProfileImage(data);
       const update = await this.prisma.user.update({
-        where: { firebaseId: firebaseId },
+        where: { id: userId },
         data: {
           profileImage: result,
         },

@@ -25,11 +25,13 @@ model User {
   facebookAcc        String   @default("")
   instagramAcc       String   @default("")
 
-  firebaseId         String   @unique
-  firebaseToken      String   @default("")
-  fcmToken           String   @default("")
+  // userId         String   @unique
+  // firebaseToken      String   @default("")
+  // fcmToken           String   @default("")
 
   pushToken          String   @default("")
+  salt               String   @default("")
+  password           String   @default("")
   refreshToken       String?
   refreshTokenExpiry DateTime @default(now())
   createdAt          DateTime @default(now())

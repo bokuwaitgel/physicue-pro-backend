@@ -27,7 +27,7 @@ export class BodyDto {
 export class CreateUserDto {
     @IsNotEmpty()
     @ApiProperty()
-    firebaseId: string;
+    userId: string;
     @IsNotEmpty()
     @ApiProperty()
     firebaseToken: string;
@@ -62,7 +62,7 @@ export class CreateUserDto {
 export class loginUserDto {
     @IsNotEmpty()
     @ApiProperty()
-    firebaseId: string;
+    userId: string;
     @IsNotEmpty()
     @ApiProperty()
     fcmToken: string;
@@ -74,13 +74,13 @@ export class loginUserDto {
 export class logoutUserDto {
     @IsNotEmpty()
     @ApiProperty()
-    firebaseId: string;
+    userId: string;
 }
 
 export class createTeacherDto {
     @IsNotEmpty()
     @ApiProperty()
-    firebaseId: string;
+    userId: string;
     @IsNotEmpty()
     @ApiProperty()
     description: string;
@@ -97,7 +97,7 @@ export class updateTeacherDto {
 export class FileUploadDto {
     @IsNotEmpty()
     @ApiProperty()
-    firebaseId: string;
+    userId: string;
     @IsNotEmpty()
     @ApiProperty({ type: 'string', format: 'binary', required: true })
     file: Express.Multer.File;

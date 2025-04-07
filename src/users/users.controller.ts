@@ -8,20 +8,20 @@ import { ApiConsumes } from '@nestjs/swagger';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-    @Post('register')
-    create(@Body() createUserDto: CreateUserDto) {
-        return this.usersService.create(createUserDto);
-    }
+    // @Post('register')
+    // create(@Body() createUserDto: CreateUserDto) {
+    //     return this.usersService.create(createUserDto);
+    // }
 
-    @Post('login')
-    login(@Body() loginUserDto: loginUserDto) {
-        return this.usersService.login(loginUserDto);
-    }
+    // @Post('login')
+    // login(@Body() loginUserDto: loginUserDto) {
+    //     return this.usersService.login(loginUserDto);
+    // }
 
-    @Post('logout')
-    logout(@Body() logoutUserDto: logoutUserDto) {
-        return this.usersService.logout(logoutUserDto);
-    }
+    // @Post('logout')
+    // logout(@Body() logoutUserDto: logoutUserDto) {
+    //     return this.usersService.logout(logoutUserDto);
+    // }
 
     @Delete('delete/:id')
     delete(@Param('id') id: string) {

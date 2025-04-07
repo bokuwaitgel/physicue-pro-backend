@@ -9,6 +9,12 @@ import { CourcesService } from './cources/cources.service';
 import { CourcesModule } from './cources/cources.module';
 import { AwsS3Service } from './s3.service';
 import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { JwtStrategy } from './auth/jwt.strategy';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { UsersService } from './users/users.service';
+import { PrismaService } from './prisma/prisma.service';
 import config from './config';
 
 @Module({
@@ -25,6 +31,6 @@ import config from './config';
     AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService, CourcesService, AwsS3Service],
+  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService],
 })
 export class AppModule {}
