@@ -9,10 +9,16 @@ import { SleepController } from './sleep/sleep.controller';
 import { SleepService } from './sleep/sleep.service';
 import { WaterController } from './water/water.controller';
 import { WaterService } from './water/water.service';
+import { AuthService } from 'src/auth/auth.service';
+import { AuthModule } from 'src/auth/auth.module';
+import { AuthController } from 'src/auth/auth.controller';
+import { JwtService } from '@nestjs/jwt';
+import { JwtStrategy } from 'src/auth/jwt.strategy';
 
 
 @Module({
-  controllers: [UsersController, BodyController, FoodController, SleepController, WaterController],
-  providers: [UsersService, BodyService, FoodService, SleepService, WaterService],
+  imports: [AuthModule],
+  controllers: [UsersController, BodyController, FoodController, SleepController, WaterController, AuthController],
+  providers: [UsersService, BodyService, FoodService, SleepService, WaterService, AuthService, JwtService, JwtStrategy],
 })
 export class UsersModule {}

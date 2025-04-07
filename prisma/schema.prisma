@@ -28,6 +28,7 @@ model User {
   // userId         String   @unique
   // firebaseToken      String   @default("")
   // fcmToken           String   @default("")
+  firebaseId         String   @default("")
 
   pushToken          String   @default("")
   salt               String   @default("")

@@ -15,13 +15,14 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { UsersService } from './users/users.service';
 import { PrismaService } from './prisma/prisma.service';
+import { AuthController } from './auth/auth.controller';
 import config from './config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.auth.env',
+      envFilePath: '.env',
       load: [config],
     }),
     UsersModule,
@@ -30,7 +31,7 @@ import config from './config';
     CourcesModule,
     AuthModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthController ],
   providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService],
 })
 export class AppModule {}

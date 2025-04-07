@@ -32,7 +32,6 @@ export class AuthController {
 
     @Post('login')
     public async login(@Body() loginUserDto: LoginUserDto): Promise<any> {
-        console.log('here');
         console.log(loginUserDto);
         return await this.authService.login(loginUserDto);
     }

@@ -71,7 +71,10 @@ export class CreateUserDto {
     @IsNotEmpty()
     @ApiProperty()
     password: string;
-    
+
+
+    @ApiProperty()
+    firebaseId: string;
     @IsNotEmpty()
     @ApiProperty()
     firstName: string;

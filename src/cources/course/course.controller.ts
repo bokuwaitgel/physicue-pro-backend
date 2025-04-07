@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, Post, Put, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Post, Put, Param, UseInterceptors, UploadedFile, Headers, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 import { CourseService } from './course.service';
-
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 //dtos
 import { 
   CreateCourseDto,
@@ -13,37 +13,50 @@ import {
   deleteCourseDetailDto,
 } from './course.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthService } from 'src/auth/auth.service';
 
 @ApiTags('course')
 @Controller('course')
 export class CourseController {
-  constructor(private readonly courseService: CourseService) {}
+  constructor(
+    private readonly courseService: CourseService,
+    private readonly authService: AuthService
+  ) {}
 
   @Get('getCourses/:teacherId')
   @ApiOperation({ summary: 'Get all courses' })
   @ApiResponse({ status: 200, description: 'Data' })
-  getCourses(@Param('teacherId') teacherId: string){
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getCourses(@Param('teacherId') teacherId: string, @Headers('Authorization') auth: string) {
+    
     return this.courseService.getCourses(teacherId);
   }
 
   @Get('getCourseById/:courseid')
   @ApiOperation({ summary: 'Get course by id' })
   @ApiResponse({ status: 200, description: 'Data' })
-  getCourseById(@Param('courseid') courseid: string){ 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getCourseById(@Param('courseid') courseid: string, @Headers('Authorization') auth: string) { 
     return this.courseService.getCourseById({id: courseid});
   }
 
   @Post('createCourse/:teacherId')
   @ApiOperation({ summary: 'Create course' })
   @ApiResponse({ status: 200, description: 'Data' })
-  public async createCourse(@Body() data: CreateCourseDto) {
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  public async createCourse(@Body() data: CreateCourseDto, @Headers('Authorization') auth: string) {
     return this.courseService.createCourse(data);
   }
 
   @Put('updateCourse/:courseId')
   @ApiOperation({ summary: 'Update course' })
   @ApiResponse({ status: 200, description: 'Data' })
-  public async updateCourse(@Param('courseId') courseId: string, @Body() data: UpdateCourseDto) {
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  public async updateCourse(@Param('courseId') courseId: string, @Body() data: UpdateCourseDto, @Headers('Authorization') auth: string) {
     return this.courseService.updateCourse(courseId, data);
   }
 
@@ -58,7 +71,10 @@ export class CourseController {
   @Get('getCourseDetails/:courseId')
   @ApiOperation({ summary: 'Get course details' })
   @ApiResponse({ status: 200, description: 'Data' })
-  getCourseDetails(@Param('courseId') courseId: string){
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getCourseDetails(@Param('courseId') courseId: string, @Headers('Authorization') auth: string) {
+
     return this.courseService.getCourseDetails(courseId);
   }
 
@@ -66,26 +82,52 @@ export class CourseController {
   @Get('getPopularCourses')
   @ApiOperation({ summary: 'Get popular courses' })
   @ApiResponse({ status: 200, description: 'Data' })
-  getPopularCourses(){
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getPopularCourses(@Headers('Authorization') auth: string) {
+  
     return this.courseService.getPopularCourses();
   }
 
   @Post('uploadCourseBanner/:courseId')
   @UseInterceptors(FileInterceptor('file'))
-  uploadProfileImage(
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async uploadProfileImage(
       @UploadedFile() file: Express.Multer.File,
-      @Param('courseId') id: string
+      @Param('courseId') id: string,
+      @Headers('Authorization') auth: string
   ) {
-      return this.courseService.uploadCourseImage(id, file);
+
+      if (!file) {
+          return {
+              status: false,
+              type: 'error',
+              code: 400,
+              message: 'File not found',
+          };
+      }
+      return await this.courseService.uploadCourseImage(id, file);
   }
 
   @Post('uploadShortVideo/:courseId')
   @UseInterceptors(FileInterceptor('file'))
-  uploadShortVideo(
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async uploadShortVideo(
       @UploadedFile() file: Express.Multer.File,
-      @Param('courseId') id: string
+      @Param('courseId') id: string,
+      @Headers('Authorization') auth: string
   ) {
-      return this.courseService.uploadShortVideo(id, file);
+      if (!file) {
+          return {
+              status: false,
+              type: 'error',
+              code: 400,
+              message: 'File not found',
+          };
+      }
+      return await this.courseService.uploadShortVideo(id, file);
   }
   
 

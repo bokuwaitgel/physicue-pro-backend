@@ -1,27 +1,18 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors, UploadedFile, UseGuards, Headers } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto,FileUploadDto } from './users.dto';
-import { ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { AuthService } from 'src/auth/auth.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('user')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService
+) {}
 
-    // @Post('register')
-    // create(@Body() createUserDto: CreateUserDto) {
-    //     return this.usersService.create(createUserDto);
-    // }
-
-    // @Post('login')
-    // login(@Body() loginUserDto: loginUserDto) {
-    //     return this.usersService.login(loginUserDto);
-    // }
-
-    // @Post('logout')
-    // logout(@Body() logoutUserDto: logoutUserDto) {
-    //     return this.usersService.logout(logoutUserDto);
-    // }
 
     @Delete('delete/:id')
     delete(@Param('id') id: string) {
@@ -29,12 +20,16 @@ export class UsersController {
     }
 
     @Get('get/:id')
-    findUser(@Param('id') id: string) {
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async findUser(@Param('id') id: string) {
         return this.usersService.get(id);
     }
 
     @Put('edit/:id')
-    update(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async update(@Param('id') id: string, @Headers('Authorization') auth: string,  @Body() updateUserDto: CreateUserDto) {
         return this.usersService.update(id, updateUserDto);
     }
 
@@ -59,11 +54,16 @@ export class UsersController {
     }
 
     @Post('uploadProfileImage/:id')
+    @ApiConsumes('multipart/form-data')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @UseInterceptors(FileInterceptor('file'))
-    uploadProfileImage(
+    async uploadProfileImage(
         @UploadedFile() file: Express.Multer.File,
-        @Param('id') id: string
-    ) {
+        @Param('id') id: string,
+        @Headers('Authorization') auth: string
+
+    ) {    
         return this.usersService.uploadProfileImage(id, file);
     }
 }
