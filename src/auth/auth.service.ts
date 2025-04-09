@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
-import { stat } from 'fs';
+import { access, stat } from 'fs';
 import { retry } from 'rxjs';
 import {ConfigService} from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -134,23 +134,17 @@ export class AuthService {
       },
     });
     
-    const body = await this.prisma.bodyHistory.findFirst({
-      where: {
-        userId: user.id,
-      },
-    });
-
+    
     return {
       code: HttpStatus.OK,
       success: true,
       type: 'success',
       data: {
-        user: {
-          ...user,
-          body,
-          expire: tokenAccess.expiresIn,
-          accessToken: tokenAccess.accessToken,
-        },
+        accessToken: tokenAccess.accessToken,
+        expiresIn: tokenAccess.expiresIn,
+        refreshToken: tokenRefresh.refreshToken,
+        refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
+        sub: true
       }
     };
   }
@@ -265,15 +259,9 @@ export class AuthService {
       data: {
         email: createUserDto.email,
         firebaseId: createUserDto.firebaseId,
-        firstName: createUserDto.firstName,
-        lastName: createUserDto.lastName,
-        profileImage: createUserDto.profileImage,
-        mobile: createUserDto.mobile,
-        address: createUserDto.address,
-        facebookAcc: createUserDto.facebookAcc,
-        instagramAcc: createUserDto.instagramAcc,
+        fcmToken: createUserDto.fcmToken,
         password: hash,
-        salt,
+        salt: salt,
       },
     });
 
@@ -298,42 +286,6 @@ export class AuthService {
       },
     });
 
-    //body
-    const body = await this.prisma.bodyHistory.create({
-      data: {
-        weight: createUserDto.body.weight,
-        height: createUserDto.body.height,
-        bodyType: createUserDto.body.bodyType,
-        age: createUserDto.body.age,
-        birthDate: createUserDto.body.birthDate,
-        bodyIssue: createUserDto.body.bodyIssue,
-        goal: createUserDto.body.goal,
-        userId: userRes.id,
-      }
-    });
-
-    //create token
-    const tokenAccessRes = await this._createTokenAccess(userRes);
-    const tokenRefreshRes = await this._createTokenRefresh(userRes);
-    if (!tokenAccessRes && !tokenRefreshRes) {
-      return {
-        code: HttpStatus.CONFLICT,
-        success: 'false',
-        type: 'failed',
-        message: 'refresh token or access token creation failed',
-      };
-    }
-    const userRes2 = await this.prisma.user.update({
-      where: {
-        id: newUser.id,
-      },
-      data: {
-        refreshToken: tokenRefreshRes.refreshToken,
-        refreshTokenExpiry: tokenRefreshRes.refreshTokenExpiry,
-      },
-    });
-    
-
 
     return {
       code: HttpStatus.OK,
@@ -341,13 +293,12 @@ export class AuthService {
       type: 'success',
       message: 'user created successfully',
       data: {
-        user: {
-          ...userRes2,
-          expire: tokenAccessRes.expiresIn,
-          accessToken: tokenAccessRes.accessToken,
+        accessToken: tokenAccess.accessToken,
+        expiresIn: tokenAccess.expiresIn,
+        refreshToken: tokenRefresh.refreshToken,
+        refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
+        userId: newUser.id,
         
-          persona: body
-        }
       }
     }
   }

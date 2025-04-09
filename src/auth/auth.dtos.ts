@@ -71,31 +71,11 @@ export class CreateUserDto {
     @IsNotEmpty()
     @ApiProperty()
     password: string;
-
-
     @ApiProperty()
     firebaseId: string;
-    @IsNotEmpty()
     @ApiProperty()
-    firstName: string;
-    @IsNotEmpty()
-    @ApiProperty()
-    lastName: string;
-   
-    @ApiProperty()
-    profileImage: string;
-    @ApiProperty()
-    mobile: string;
-    @ApiProperty()
-    address: string;
-
-    @ApiProperty()
-    facebookAcc: string;
-    @ApiProperty()
-    instagramAcc: string;
-
-    @ApiProperty()
-    body: BodyDto;
+    fcmToken: string
+    
 }
 
 
