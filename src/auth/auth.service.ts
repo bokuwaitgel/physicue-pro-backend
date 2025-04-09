@@ -144,7 +144,8 @@ export class AuthService {
         expiresIn: tokenAccess.expiresIn,
         refreshToken: tokenRefresh.refreshToken,
         refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
-        sub: true
+        sub: true,
+        userId: user.id,
       }
     };
   }
