@@ -93,7 +93,6 @@ export class CourseService {
   }
 
   async updateCourse(courseId: string, data: UpdateCourseDto) : Promise<unknown> {
-    console.log(courseId);
     const find = await this.prisma.courses.findUnique({
       where: {
         id: courseId

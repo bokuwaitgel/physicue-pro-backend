@@ -14,7 +14,6 @@ export class SchedulerService {
 
   async createScheduler(data: CreateSchedulerDto) {
     try {
-      console.log('courseid', data.courseId);
       const findCourse = await this.prisma.courses.findUnique({
         where: { id: data.courseId }
       });
