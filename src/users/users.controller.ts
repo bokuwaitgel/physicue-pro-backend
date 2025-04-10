@@ -19,11 +19,17 @@ export class UsersController {
         return this.usersService.delete(id);
     }
 
-    @Get('get/:id')
+    @Get('get')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    async findUser(@Param('id') id: string) {
-        return this.usersService.get(id);
+    async findUser(@Headers('Authorization') auth: string) {
+        //get id from token
+        const token = auth.split(' ')[1];
+        const decoded =await this.authService.verifyToken({token});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.get(decoded.data.id);
     }
 
     @Put('edit/:id')
