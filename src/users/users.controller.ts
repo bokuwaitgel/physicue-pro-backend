@@ -23,9 +23,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     async findUser(@Headers('Authorization') auth: string) {
-        //get id from token
-        const token = auth.split(' ')[1];
-        const decoded =await this.authService.verifyToken({token});
+        const decoded =await this.authService.verifyToken({token: auth});
         if (decoded.code != 200) {
             return decoded;
         }
