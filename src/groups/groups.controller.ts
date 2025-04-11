@@ -1,13 +1,17 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors, UploadedFile, UseGuards, Headers } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto, UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto , GroupCourseDto} from './group.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'; 
+import { AuthService } from 'src/auth/auth.service';
 @Controller('groups')
 export class GroupsController {
-    constructor(private groupsService: GroupsService) {}
+    constructor(
+        private groupsService: GroupsService,
+        private authService: AuthService
+    ) {}
 
     //group
     @Post('create')
@@ -55,6 +59,13 @@ export class GroupsController {
     }
 
     //member
+    @Get('members/:groupId')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    getGroupMembers(@Param('groupId') groupId: string) {
+        return this.groupsService.getGroupMembers(groupId);
+    }
+
     @Post('member/add')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
@@ -69,6 +80,31 @@ export class GroupsController {
         return this.groupsService.updateGroupMember(id, groupMemberDto);
     }
 
+    @Post('join')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    async joinGroup(@Body() data: {groupId: string}, @Headers('Authorization') auth: string) {
+        const decoded = await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        return this.groupsService.joinGroup(data.groupId, userId);
+    }
+
+    @Post('leave')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    async leaveGroup(@Body() data: {groupId: string}, @Headers('Authorization') auth: string) {
+        const decoded = await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        return this.groupsService.leaveGroup(data.groupId, userId);
+    }
+
+    // @Post('member/remove')e
     //course
     @Post('group/course')
     @ApiBearerAuth()

@@ -163,7 +163,7 @@ export class CourseService {
     }
   }
 
-  async getCourseDetails(courseId: string) : Promise<unknown> {
+  async getCourseDetails(courseId: string, userId: string) : Promise<unknown> {
     const res = await this.prisma.courses.findFirst({
       where: {
         id: courseId
@@ -176,19 +176,36 @@ export class CourseService {
       }
     });
 
-    const course_exercises: Array<{ id: string; description: string; status: string; teacherId: string; createdAt: Date; updatedAt: Date; name: string; purpose: string; duration: number; level: string; type: string; image: string; video: string; }> = [];
-    for(let i = 0; i < exercise_ids.length; i++)
-    {
-      const exercise = await this.prisma.exercises.findUnique({
-        where: {
-          id: exercise_ids[i].exerciseId
-        }
-      });
-      if (!exercise) {
-        continue;
+    //Is the user enrolled in the course?
+    const enrolled = await this.prisma.courseEnrollment.findFirst({
+      where: {
+        courseId: courseId,
+        userId: userId
       }
-      course_exercises.push(exercise);
-    }
+    });
+
+
+    // get exercise details
+    const exercise_details = await this.prisma.exercises.findMany({
+      where: {
+        id: {
+          in: exercise_ids.map((exercise) => exercise.exerciseId)
+        }
+      },
+      orderBy: {
+        day: 'asc'
+      }
+    });
+    // check exercise locked or not if enrolled date and current date is not equal exercise.day then locked
+
+    const mapped_exercises = exercise_details.map((exercise) => {
+      return {
+        ...exercise,
+        is_locked: enrolled ? (
+          (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1) ? false : true
+        ) : true
+      }
+    });
 
 
     return {
@@ -198,24 +215,40 @@ export class CourseService {
       code : HttpStatus.OK,
       data: {
         ...res,
-        exercises: course_exercises
+        enrolled: !!enrolled,
+        exercises: mapped_exercises
       }
     }
   }
 
 
-  async getPopularCourses() : Promise<unknown> {
+  async getPopularCourses(userId: string) : Promise<unknown> {
+    
     const res = await this.prisma.courses.findMany({
       orderBy: {
         createdAt: 'desc'
       }
     });
+    const userEnrolled = await this.prisma.courseEnrollment.findMany({
+      where: {
+        userId: userId
+      }
+    });
+
+    const result = res.map((course) => {
+      const enrolled = userEnrolled.find((enrollment) => enrollment.courseId === course.id);
+      return {
+        ...course,
+        enrolled: !!enrolled
+      }
+    })
+
     return {
       status: true,
       type: 'success',
       message: 'Courses fetched',
       code : HttpStatus.OK,
-      data: res
+      data: result
     }
   }
 
@@ -319,6 +352,44 @@ export class CourseService {
         message: e.message,
         code : HttpStatus.BAD_REQUEST,
       }
+    }
+  }
+
+  async enrollCourse(courseId: string, userId: string) : Promise<unknown> {
+    const course = await this.prisma.courses.findUnique({
+      where: {
+        id: courseId
+      }
+    });
+    if(!course){
+      return {
+        status: false,
+        type: 'error',
+        message: 'Course not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+    const enroll = await this.prisma.courseEnrollment.create({
+      data: {
+        teacherId: course.teacherId,
+        courseId: courseId,
+        userId: userId
+      }
+    });
+    if(!enroll){
+      return {
+        status: false,
+        type: 'error',
+        message: 'Course not enrolled',
+        code : HttpStatus.BAD_REQUEST,
+      }
+    }
+    return {
+      status: true,
+      type: 'success',
+      message: 'Course enrolled',
+      code : HttpStatus.OK,
+      data: enroll
     }
   }
 

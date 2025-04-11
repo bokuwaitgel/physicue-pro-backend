@@ -16,6 +16,11 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { UsersService } from './users/users.service';
 import { PrismaService } from './prisma/prisma.service';
 import { AuthController } from './auth/auth.controller';
+import { EventController } from './groups/event/event.controller';
+import { EventService } from './groups/event/event.service';
+import { EventModule } from './groups/event/event.module';
+
+
 import config from './config';
 
 @Module({
@@ -29,9 +34,10 @@ import config from './config';
     PrismaModule,
     GroupsModule,
     CourcesModule,
-    AuthModule
+    AuthModule,
+    EventModule,  
   ],
-  controllers: [AppController, AuthController ],
-  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService],
+  controllers: [AppController, AuthController, EventController],
+  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService],
 })
 export class AppModule {}

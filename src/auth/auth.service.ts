@@ -34,7 +34,6 @@ export class AuthService {
       secret: process.env.SECRETKEY,
       ignoreExpiration: false,
     }) 
-    console.log(decoded)
     decoded.exp *= 1000
     const expireDate = new Date(decoded.exp)
 
@@ -82,8 +81,12 @@ export class AuthService {
     return {
       code: HttpStatus.OK,
       data: {
-        ...tokenAccess,
-        user
+        accessToken: tokenAccess.accessToken,
+        expiresIn: tokenAccess.expiresIn,
+        refreshToken: user.refreshToken,
+        refreshTokenExpiry: user.refreshTokenExpiry,
+        sub: true,
+        userId: user.id,
       },
     };
   }
@@ -211,9 +214,7 @@ export class AuthService {
         secret: process.env.SECRETKEY,
         ignoreExpiration: false,
       }) 
-      console.log(decoded);
       const user = await this.usersService.findByLogin(decoded.email);
-      console.log(user)
       if (!user) {
         return {
           code: HttpStatus.CONFLICT,

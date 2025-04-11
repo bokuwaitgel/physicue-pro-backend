@@ -276,6 +276,13 @@ export class UsersService {
       }
     });
 
+    //check is user is teacher
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        userId: user.id
+      }
+    });
+
     return {
       success: true,
       type: 'success',
@@ -284,7 +291,8 @@ export class UsersService {
         user: {
           ...user,
           persona: body
-        }
+        },
+        is_teacher: teacher ? true : false,
       },
       code: HttpStatus.OK,
     }

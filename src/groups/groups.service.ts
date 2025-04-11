@@ -227,6 +227,141 @@ export class GroupsService {
         }
     }
 
+    async joinGroup(groupId: string, userId: string) {
+        //check if group exists
+        const group = await this.prisma.group.findUnique({
+            where: {
+                id: groupId,
+            },
+        });
+        if (!group) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Group not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+        if (!user) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'User not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        //check if user is already a member of the group
+        const groupMember = await this.prisma.groupMembers.findFirst({
+            where: {
+                    userId: userId,
+                    groupId: groupId,
+            },
+        });
+        if (groupMember) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'User is already a member of the group',
+                code: HttpStatus.CONFLICT,
+            }
+        }
+
+        try {
+            const result = await this.prisma.groupMembers.create({
+                data: {
+                    status: 'active',
+                    user: {
+                        connect: {
+                            id: userId,
+                        }
+                    },
+                    group: {
+                        connect: {
+                            id: groupId,
+                        }
+                    }
+                }
+            });
+    
+            return {
+                success: true,
+                type: 'success',
+                message: 'Group member added',
+                data: result,
+                code: HttpStatus.CREATED,
+            }
+        } catch (error) {
+            return {
+                success: false,
+                type: 'error',
+                message: error.message,
+                code: HttpStatus.INTERNAL_SERVER_ERROR,
+            }
+        }
+    }
+
+    async leaveGroup(groupId: string, userId: string) {
+        //check if group exists
+        const group = await this.prisma.group.findUnique({
+            where: {
+                id: groupId,
+            },
+        });
+        if (!group) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Group not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+        if (!user) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'User not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        try {
+            const result = await this.prisma.groupMembers.deleteMany({
+                where: {
+                    userId,
+                    groupId,
+                }
+            });
+            
+            return {
+                success: true,
+                type: 'success',
+                message: 'Group member removed',
+                data: result,
+                code: HttpStatus.OK,
+            }
+        } catch (error) {
+            return {
+                success: false,
+                type: 'error',
+                message: error.message,
+                code: HttpStatus.INTERNAL_SERVER_ERROR,
+            }
+        }
+    }
+
     async updateGroup (id: string, data: UpdateGroupDto) {
         //check if group exists
         const group = await this.prisma.group.findUnique({

@@ -122,3 +122,9 @@ export class getCourseDetailByIdDto {
   @ApiProperty()
   id: string;
 }
+
+export class enrolCourse{
+  @IsNotEmpty()
+  @ApiProperty()
+  courseId: string;
+}

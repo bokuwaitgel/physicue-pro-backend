@@ -74,8 +74,12 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async getCourseDetails(@Param('courseId') courseId: string, @Headers('Authorization') auth: string) {
-
-    return this.courseService.getCourseDetails(courseId);
+    const decoded =await this.authService.verifyToken({token: auth});
+    if (decoded.code != 200) {
+        return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.courseService.getCourseDetails(courseId, userId);
   }
 
 
@@ -85,8 +89,12 @@ export class CourseController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async getPopularCourses(@Headers('Authorization') auth: string) {
-  
-    return this.courseService.getPopularCourses();
+    const decoded =await this.authService.verifyToken({token: auth});
+    if (decoded.code != 200) {
+        return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.courseService.getPopularCourses(userId);
   }
 
   @Post('uploadCourseBanner/:courseId')
@@ -129,7 +137,20 @@ export class CourseController {
       }
       return await this.courseService.uploadShortVideo(id, file);
   }
-  
+
+  @Post('EnrollCourse')
+  @ApiOperation({ summary: 'Enroll course' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  public async enrollCourse(@Body() data: any, @Headers('Authorization') auth: string) {
+    const decoded =await this.authService.verifyToken({token: auth});
+    if (decoded.code != 200) {
+        return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.courseService.enrollCourse(data.courseId, userId);
+  }
 
 
 }
