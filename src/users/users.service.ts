@@ -290,6 +290,7 @@ export class UsersService {
       data: {
         user: {
           ...user,
+          role: teacher ? 'teacher' : 'user',
           persona: body
         },
         is_teacher: teacher ? true : false,
