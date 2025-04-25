@@ -452,7 +452,7 @@ export class GroupsService {
         }
     }
 
-    async getGroups(teacherId: string) {
+    async getTeacherGroups(teacherId: string, userId: string) {
         //check if teacher exists
         const teacher = await this.prisma.teacher.findUnique({
             where: {
@@ -474,11 +474,28 @@ export class GroupsService {
             },
         });
 
+        //check user is in group
+        const groupMembers = await this.prisma.groupMembers.findMany({
+            where: {
+                userId,
+            },
+        });
+
+        const groupIds = groupMembers.map(group => group.groupId);
+
+        const groupsData = groups.map(group => {
+            const isMember = groupIds.includes(group.id);
+            return {
+                ...group,
+                is_member: isMember,
+            }
+        })
+
         return {
             success: true,
             type: 'success',
             message: 'Groups fetched',
-            data: groups,
+            data: groupsData,
             code: HttpStatus.OK,
         }
     }
@@ -637,13 +654,31 @@ export class GroupsService {
         }
     }
 
-    async getGroup(){
+    async getGroup(userId: string){
         const groups = await this.prisma.group.findMany( );
+
+        //check user is in group
+        const groupMembers = await this.prisma.groupMembers.findMany({
+            where: {
+                userId,
+            },
+        });
+
+        const groupIds = groupMembers.map(group => group.groupId);
+
+        const groupsData = groups.map(group => {
+            const isMember = groupIds.includes(group.id);
+            return {
+                ...group,
+                is_member: isMember,
+            }
+        })
+
         return {
             success: true,
             type: 'success',
             message: 'Groups fetched',
-            data: groups,
+            data: groupsData,
             code: HttpStatus.OK,
         }
     }

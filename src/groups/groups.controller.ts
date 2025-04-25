@@ -31,8 +31,13 @@ export class GroupsController {
     @Get(':teacherId')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
-    getGroups(@Param('teacherId') teacherId: string) {
-        return this.groupsService.getGroups(teacherId);
+    async getGroups(@Param('teacherId') teacherId: string, @Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        return this.groupsService.getTeacherGroups(teacherId, userId);
     }
 
     //event
@@ -117,14 +122,19 @@ export class GroupsController {
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
     getCourse(@Param('groupId') groupId: string) {
-        return this.groupsService.getGroups(groupId);
+        return this.groupsService.getGroupCourses(groupId);
     }
 
     @Get('')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
-    getAllGroups() {
-        return this.groupsService.getGroup();
+    async getAllGroups(@Headers('Authorization') auth: string) {
+        const decoded = await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        return this.groupsService.getGroup(userId);
     }
 
     @Get('groupDetail/:id')
