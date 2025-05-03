@@ -764,7 +764,11 @@ export class GroupsService {
             },
         });
 
-
+        const activities = await this.prisma.groupActivities.findMany({
+            where: {
+                groupId,
+            },
+        });
 
         return {
             success: true,
@@ -782,6 +786,7 @@ export class GroupsService {
                 members: groupMembers.length,
                 courses: groupCoursesData,
                 events: events,
+                activities: activities,
             },
             code: HttpStatus.OK,
         }

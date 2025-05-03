@@ -188,6 +188,8 @@ model Group {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  groupActivities GroupActivities[]
+
   Story        Story[]
   GroupMembers GroupMembers[]
   GroupCourses GroupCourses[]
@@ -195,6 +197,18 @@ model Group {
 
   adminId      String  @db.ObjectId
   admin        Teacher @relation(fields: [adminId], references: [id])
+}
+
+model GroupActivities {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  groupId   String   @db.ObjectId
+  activity  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@index([groupId])
 }
 
 model Story {
