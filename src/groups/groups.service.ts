@@ -695,13 +695,13 @@ export class GroupsService {
         }
     }
 
-    async getGroupById(groupId: string) {
+    async getGroupById(groupId: string, userId: string) {
         const group = await this.prisma.group.findUnique({
             where: {
                 id: groupId,
             },
         });
-
+        
         if (!group) {
             return {
                 success: false,
@@ -710,6 +710,37 @@ export class GroupsService {
                 code: HttpStatus.NOT_FOUND,
             }
         }
+
+        const teacher = await this.prisma.teacher.findUnique({
+            where: {
+                id: group.adminId,
+            },
+        });
+        if (!teacher) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Teacher not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const teacher_user = await this.prisma.user.findUnique({
+            where: {
+                id: teacher.userId,
+            },
+        });
+        if (!teacher_user) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Teacher user not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const groupMembers = await this.prisma.groupMembers.findMany({
+        })
 
         const groupCourses = await this.prisma.groupCourses.findMany({
             where: {
@@ -727,6 +758,11 @@ export class GroupsService {
             },
         });
 
+        const events = await this.prisma.event.findMany({
+            where: {
+                groupId,
+            },
+        });
 
 
 
@@ -736,7 +772,16 @@ export class GroupsService {
             message: 'Group fetched',
             data: {
                 ...group,
+                first_name: teacher_user.firstName,
+                last_name: teacher_user.lastName,
+                profile_image: teacher_user.profileImage,
+                gmail: teacher_user.email,
+                mobile: teacher_user.mobile,
+                is_my_group: teacher_user.id === userId,
+                is_member: groupMembers.some(member => member.userId === userId),
+                members: groupMembers.length,
                 courses: groupCoursesData,
+                events: events,
             },
             code: HttpStatus.OK,
         }

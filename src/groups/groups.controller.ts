@@ -147,8 +147,13 @@ export class GroupsController {
     @Get('groupDetail/:id')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
-    getGroupDetail(@Param('id') id: string) {
-        return this.groupsService.getGroupById(id);
+    async getGroupDetail(@Param('id') id: string, @Headers('Authorization') auth: string) {
+        const decoded = await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        return this.groupsService.getGroupById(id, userId);
     }
 
     @Post('uploadGroupBanner/:id')
