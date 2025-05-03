@@ -310,6 +310,7 @@ export class UsersService {
           persona: body
         },
         is_teacher: teacher ? true : false,
+        teacher_id: teacher ? teacher.id : ''
       },
       code: HttpStatus.OK,
     }
