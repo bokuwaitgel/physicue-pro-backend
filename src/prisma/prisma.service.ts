@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, CourseType } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -10,4 +10,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleDestroy() {
     await this.$disconnect();
   }
+}
+
+export const CourseTypes = {
+  "Yoga": CourseType.Yoga,
+  "Pilates": CourseType.Pilates,
+  "GYM": CourseType.GYM,
+  "CrossFit": CourseType.CrossFit,
+  "Stretch": CourseType.Stretch,
+  // Add other course types as needed
 }

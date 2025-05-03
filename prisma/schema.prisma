@@ -13,6 +13,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+// local variables course Type
+// course Type
+enum CourseType {
+  Yoga
+  GYM
+  Stretch
+  Pilates
+  CrossFit
+}
+
+
+
 model User {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   firstName          String?
@@ -296,12 +309,13 @@ model Courses {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   title       String
-  description String
+  description String @default("")
 
   duration    Int
+  type        CourseType[] @default([])
 
-  bannerImage String
-  shortVideo  String
+  bannerImage String  @default("")
+  shortVideo  String  @default("")
 
   status      String  @default("active")
 
@@ -320,7 +334,6 @@ model Courses {
 
   @@index([teacherId])
 }
-
 model CourseExercises {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   courseId   String   @db.ObjectId

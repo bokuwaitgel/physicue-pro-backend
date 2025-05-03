@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Post, Put, Param, UseInterceptors, UploadedFile, Headers, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 
 import { CourseService } from './course.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -44,11 +44,16 @@ export class CourseController {
 
   @Post('createCourse/:teacherId')
   @ApiOperation({ summary: 'Create course' })
+  @UseInterceptors(FileInterceptor('shortVideo'))
   @ApiResponse({ status: 200, description: 'Data' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  public async createCourse(@Body() data: CreateCourseDto, @Headers('Authorization') auth: string) {
-    return this.courseService.createCourse(data);
+  public async createCourse( 
+    @Body() data: CreateCourseDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('Authorization') auth: string, 
+    @Param('teacherId') teacherId: string) {
+    return this.courseService.createCourse(data, file, teacherId);
   }
 
   @Put('updateCourse/:courseId')

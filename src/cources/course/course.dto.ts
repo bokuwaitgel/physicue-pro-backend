@@ -1,25 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 export class CreateCourseDto {
   @IsNotEmpty()
   @ApiProperty()
   title: string;
-  @IsNotEmpty()
-  @ApiProperty()
-  description: string;
-  @IsNotEmpty()
-  @ApiProperty()
-  bannerImage: string;
-  @IsNotEmpty()
-  @ApiProperty()
-  shortVideo: string;
-  @IsNotEmpty()
-  @ApiProperty()
-  teacherId: string;
   @ApiProperty()
   @IsNotEmpty()
-  duration: number;
+  duration: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  type: string;
 }
 
 

@@ -1,5 +1,5 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService, CourseTypes } from '../../prisma/prisma.service';
 import { AwsS3Service } from 'src/s3.service';
 
 //dtos
@@ -13,25 +13,36 @@ import {
   deleteCourseDetailDto,
   getCourseDetailByIdDto,
 } from './course.dto';
+import { Prisma } from '@prisma/client';
+import { parse } from 'path';
 
 @Injectable()
 export class CourseService {
   
   constructor(private prisma: PrismaService) {}
 
-  async createCourse(data: CreateCourseDto) : Promise<unknown> {
+  async createCourse(data: CreateCourseDto, file : any, teacher_id: string) : Promise<unknown> {
     try{
+      const parsedArray = JSON.parse(data.type);
+
+      const types: (keyof typeof CourseTypes)[] = []
+
+      for(let i = 0; i < parsedArray.length; i++){
+        const type = CourseTypes[parsedArray[i]];
+        if(type){
+          types.push(type);
+        }
+      }
+      
 
       const res = await this.prisma.courses.create({
         data: {
           title: data.title,
-          description: data.description,
-          bannerImage: data.bannerImage,
-          shortVideo: data.shortVideo,
-          duration: data.duration,
+          duration: parseInt(data.duration),
+          type: types,
           teacher: {
             connect: {
-              id: data.teacherId
+              id: teacher_id
             }
           }
         }
@@ -44,12 +55,24 @@ export class CourseService {
           code : HttpStatus.BAD_REQUEST,
         }
       }
+
+      //upload file to s3
+      // await this.uploadCourseImage(res.id, data.file);
+      const result = await this.uploadShortVideo(res.id, file);
+
+      //update course with short video
+      const updated_res = await this.prisma.courses.findFirst({
+        where: {
+          id: res.id
+        }
+      });
+
       return {
         status: true,
         type: 'success',
         message: 'Course created',
         code : HttpStatus.OK,
-        data: res
+        data: updated_res
       }
     }catch(e){
       return {
@@ -394,3 +417,4 @@ export class CourseService {
   }
 
 }
+
