@@ -70,4 +70,15 @@ export class UsersController {
     ) {    
         return this.usersService.uploadProfileImage(id, file);
     }
+
+    @Post('termAccepted')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async termAccepted(@Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.isTermAccepted( decoded.data.id);
+    }
 }

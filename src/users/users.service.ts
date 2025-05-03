@@ -582,4 +582,45 @@ export class UsersService {
     return user;
   }
   
+
+  async isTermAccepted(userId: string): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+    
+    if (!user) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'User does not exists',
+        code: HttpStatus.NOT_FOUND
+      }
+    }
+    if (user.isTermAccepted) {
+      return {
+        success: true,
+        type: 'success',
+        message: 'Already accepted terms',
+        data: user.isTermAccepted,
+        code: HttpStatus.OK
+      }
+    }
+
+    const result = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isTermAccepted: true
+      }
+    });
+    return {
+      success: true,
+      type: 'success',
+      message: 'Terms accepted',
+      data: {
+        isTermAccepted: result.isTermAccepted
+      },
+      code: HttpStatus.OK
+    }
+
+  }
 }

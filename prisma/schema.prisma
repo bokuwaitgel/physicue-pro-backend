@@ -33,6 +33,7 @@ model User {
   pushToken          String   @default("")
   salt               String   @default("")
   password           String   @default("")
+  isTermAccepted     Boolean  @default(false)
   refreshToken       String?
   refreshTokenExpiry DateTime @default(now())
   createdAt          DateTime @default(now())
