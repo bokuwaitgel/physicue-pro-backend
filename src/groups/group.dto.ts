@@ -6,15 +6,15 @@ export class CreateGroupDto {
     @IsNotEmpty()
     @ApiProperty()
     name: string;
-    @IsNotEmpty()
-    @ApiProperty()
-    description: string;
-    @ApiProperty()
-    bannerImage: string;
-    @ApiProperty()
-    requirements: string;
-    @ApiProperty()
-    adminId: string;
+//     @IsNotEmpty()
+//     @ApiProperty()
+//     description: string;
+//     @ApiProperty()
+//     bannerImage: string;
+//     @ApiProperty()
+//     requirements: string;
+    // @ApiProperty()
+    // adminId: string;
 }
 
 export class UpdateGroupDto {

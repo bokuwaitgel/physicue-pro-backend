@@ -15,6 +15,12 @@ export class BodyDto {
   age: number;
 
   @ApiProperty()
+  gender: string;
+
+  @ApiProperty()
+  workoutRepeat: string;
+
+  @ApiProperty()
   birthDate: Date;
 
   @ApiProperty()

@@ -6,6 +6,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'; 
 import { AuthService } from 'src/auth/auth.service';
+import { Token } from 'aws-sdk';
 @Controller('groups')
 export class GroupsController {
     constructor(
@@ -17,8 +18,14 @@ export class GroupsController {
     @Post('create')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
-    createGroup(@Body() createGroupDto: CreateGroupDto) {
-        return this.groupsService.createGroup(createGroupDto);
+    async createGroup(@Body() createGroupDto: CreateGroupDto, @Headers('Authorization') auth: string) {
+        const decoded = await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+
+        return this.groupsService.createGroup(createGroupDto, userId);
     }
 
     @Put('update/:id')

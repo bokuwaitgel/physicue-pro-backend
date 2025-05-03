@@ -8,11 +8,11 @@ import { stat } from 'fs';
 export class GroupsService {
     constructor(private prisma: PrismaService) {}
 
-    async createGroup(data: CreateGroupDto) {
+    async createGroup(data: CreateGroupDto, userId: string) {
         //check if teacher exists
-        const teacher = await this.prisma.teacher.findUnique({
+        const teacher = await this.prisma.teacher.findFirst({
             where: {
-                id: data.adminId,
+                userId: userId,
             },
         });
         if (!teacher) {
@@ -23,16 +23,28 @@ export class GroupsService {
                 code: HttpStatus.NOT_FOUND,
             }
         }
+
+        const group_count = await this.prisma.group.findMany({
+            where: {
+                adminId: teacher.id
+            }
+        })
+
+        if (group_count.length >= teacher.groupLimit){
+            return {
+                success: false,
+                type: 'limit',
+                message: 'Group limit reached',
+                code: HttpStatus.FORBIDDEN,  
+            }
+        }
         
         const result = await this.prisma.group.create({
             data: {
                 name: data.name,
-                description: data.description,
-                bannerImage: data.bannerImage,
-                requirements: data.requirements,
                 admin: {
                     connect: {
-                        id: data.adminId,
+                        id: teacher.id,
                     }
                 }
             }
