@@ -56,7 +56,7 @@ export class CreateUserDto {
     instagramAcc: string;
 
     @ApiProperty()
-    body: BodyDto;
+    persona: BodyDto;
 }
 
 export class loginUserDto {

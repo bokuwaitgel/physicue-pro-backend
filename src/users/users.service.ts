@@ -43,13 +43,13 @@ export class UsersService {
 
   //         const body = await this.prisma.bodyHistory.create({
   //           data: {
-  //             weight: createUserDto.body.weight,
-  //             height: createUserDto.body.height,
-  //             bodyType: createUserDto.body.bodyType,
-  //             age: createUserDto.body.age,
-  //             birthDate: createUserDto.body.birthDate,
-  //             bodyIssue: createUserDto.body.bodyIssue,
-  //             goal: createUserDto.body.goal,
+  //             weight: createUserDto.persona.weight,
+  //             height: createUserDto.persona.height,
+  //             bodyType: createUserDto.persona.bodyType,
+  //             age: createUserDto.persona.age,
+  //             birthDate: createUserDto.persona.birthDate,
+  //             bodyIssue: createUserDto.persona.bodyIssue,
+  //             goal: createUserDto.persona.goal,
   //             userId: result.id,
   //           }
   //         });
@@ -189,7 +189,7 @@ export class UsersService {
         userId: user.id
       }
     });
-    if (updateUserDto.body) {
+    if (updateUserDto.persona) {
 
       if (bodyHistory) {
         bodyHistory = await this.prisma.bodyHistory.update({
@@ -197,13 +197,13 @@ export class UsersService {
             id: bodyHistory.id
           },
           data: {
-            weight: updateUserDto.body.weight,
-            height: updateUserDto.body.height,
-            bodyType: updateUserDto.body.bodyType,
-            age: updateUserDto.body.age,
-            birthDate: updateUserDto.body.birthDate,
-            bodyIssue: updateUserDto.body.bodyIssue,
-            goal: updateUserDto.body.goal,
+            weight: updateUserDto.persona.weight,
+            height: updateUserDto.persona.height,
+            bodyType: updateUserDto.persona.bodyType,
+            age: updateUserDto.persona.age,
+            birthDate: updateUserDto.persona.birthDate,
+            bodyIssue: updateUserDto.persona.bodyIssue,
+            goal: updateUserDto.persona.goal,
           }
         });
       }
