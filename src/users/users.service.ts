@@ -190,7 +190,6 @@ export class UsersService {
       }
     });
     if (updateUserDto.persona) {
-
       if (bodyHistory) {
         bodyHistory = await this.prisma.bodyHistory.update({
           where: {
@@ -204,6 +203,19 @@ export class UsersService {
             birthDate: updateUserDto.persona.birthDate,
             bodyIssue: updateUserDto.persona.bodyIssue,
             goal: updateUserDto.persona.goal,
+          }
+        });
+      }else{
+        bodyHistory = await this.prisma.bodyHistory.create({
+          data: {
+            weight: updateUserDto.persona.weight,
+            height: updateUserDto.persona.height,
+            bodyType: updateUserDto.persona.bodyType,
+            age: updateUserDto.persona.age,
+            birthDate: updateUserDto.persona.birthDate,
+            bodyIssue: updateUserDto.persona.bodyIssue,
+            goal: updateUserDto.persona.goal,
+            userId: user.id
           }
         });
       }
