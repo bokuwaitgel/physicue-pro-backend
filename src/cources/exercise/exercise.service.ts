@@ -15,22 +15,34 @@ export class ExerciseService {
   
   constructor(private prisma: PrismaService) {}
 
-  async createExercise(data: CreateExerciseDto) : Promise<unknown> {
+  async createExercise(data: CreateExerciseDto, video: any, userId: string) : Promise<unknown> {
     try{
+
+      const teacher = await this.prisma.teacher.findFirst({
+        where: {
+          userId: userId
+        }
+      });
+
+      if(!teacher) {
+        return {
+          status: false,
+          type: 'failed',
+          message: 'Teacher not found',
+          code : HttpStatus.NOT_FOUND,
+        }
+      }
+      const teacherId = teacher.id;
+
       const res = await this.prisma.exercises.create({
         data: {
           name: data.name,
-          description: data.description,
-          purpose: data.purpose,
-          duration: data.duration,
-          day: data.day,
+          day: parseInt(data.day),
           level: data.level,
-          image: data.image,
-          video: data.video,
           type: data.type,
           teacher: {
             connect: {
-              id: data.teacherId
+              id: teacherId
             }
         }
         }
@@ -43,12 +55,47 @@ export class ExerciseService {
           code : HttpStatus.BAD_REQUEST,
         }
       }
+
+      const result = await this.uploadExerciseVideo(res.id, video);
+
+      //check course
+      const course = await this.prisma.courses.findUnique({
+        where: {
+          id: data.courseId
+        }
+      });
+
+      if(course) {
+        const tt = await this.prisma.courseExercises.create({
+          data: {
+            courses: {
+              connect: {
+                id: data.courseId
+              }
+            },
+            exercises: {
+              connect: {
+                id: res.id
+              }
+            }
+          }
+        });
+        console.log('course', tt);
+      }
+
+      //get latest exercise
+      const latestExercise = await this.prisma.exercises.findUnique({
+        where: {
+          id: res.id
+        }
+      });
+
       return {
         status: true,
         type: 'success',
         message: 'Exercise created',
         code : HttpStatus.OK,
-        data: res
+        data: latestExercise
       }
     }catch(e){
       return {
@@ -118,7 +165,6 @@ export class ExerciseService {
         name: data.name,
         description: data.description,
         purpose: data.purpose,
-        duration: data.duration,
         day: data.day,
         level: data.level,
         type: data.type,

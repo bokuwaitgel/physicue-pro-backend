@@ -7,34 +7,15 @@ export class CreateExerciseDto {
   name: string;
   @IsNotEmpty()
   @ApiProperty()
-  description: string;
-  @IsNotEmpty()
-  @ApiProperty()
-  purpose: string;
-  @IsNotEmpty()
-  @ApiProperty()
-  duration: number;
-  @IsNotEmpty()
-  @ApiProperty()
-  day: number;
-
+  day: string;
   @IsNotEmpty()
   @ApiProperty()
   level: string;  // beginner, intermediate, advanced
   @IsNotEmpty()
   @ApiProperty()
   type : string; // strength, cardio, flexibility
-
   @IsNotEmpty()
-  @ApiProperty()
-  image: string;
-  @IsNotEmpty()
-  @ApiProperty()
-  video: string;
-
-  @IsNotEmpty()
-  @ApiProperty()
-  teacherId: string;
+  courseId: string;
 }
 
 export class UpdateExerciseDto {

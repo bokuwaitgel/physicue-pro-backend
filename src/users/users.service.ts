@@ -1,7 +1,8 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AwsS3Service } from 'src/s3.service';
-import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto} from './users.dto';
+import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto, createSubPlanDto, updateSubPlanDto} from './users.dto';
+import { parse } from 'path';
 
 @Injectable()
 export class UsersService {
@@ -622,5 +623,193 @@ export class UsersService {
       code: HttpStatus.OK
     }
 
+  }
+
+  async createPlan(date: createSubPlanDto): Promise<any> {
+    
+    const result = await this.prisma.subscriptionPlan.create({
+      data: {
+        planName: date.planName,
+        cost: date.cost,
+        duration: parseInt(date.duration),
+      }
+    });
+
+    if (!result) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Error creating plan',
+        code: HttpStatus.INTERNAL_SERVER_ERROR
+      }
+    }
+    return {
+      success: true,
+      type: 'success',
+      message: 'Plan created',
+      data: result,
+      code: HttpStatus.OK
+    }
+    
+  }
+
+  async updatePlan(id: string, date: updateSubPlanDto): Promise<any> {
+    const plan = await this.prisma.subscriptionPlan.findUnique({
+      where: { id: id }
+    });
+    if (!plan) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Plan does not exists',
+        code: HttpStatus.NOT_FOUND
+      }
+    }
+
+    const result = await this.prisma.subscriptionPlan.update({
+      where: { id: id },
+      data: {
+        planName: date.planName,
+        cost: date.cost,
+        duration: parseInt(date.duration),
+      }
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'Plan updated',
+      data: result,
+      code: HttpStatus.OK
+    }
+  }
+
+  async getPlans(): Promise<any> {
+    const plans = await this.prisma.subscriptionPlan.findMany({
+      where: {
+        status: 'active'
+      }
+    });
+    return {
+      success: true,
+      type: 'success',
+      message: 'Plans found',
+      data: plans,
+      code: HttpStatus.OK
+    }
+  }
+
+  async subscribePlan(userId: string, planId: string): Promise<any> {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId }
+    });
+    console.log(user);
+    if (!user) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'User does not exists',
+        code: HttpStatus.NOT_FOUND
+      }
+    }
+
+    const plan = await this.prisma.subscriptionPlan.findUnique({
+      where: { id: planId }
+    });
+    if (!plan) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Plan does not exists',
+        code: HttpStatus.NOT_FOUND
+      }
+    }
+
+    const getSubscription = await this.prisma.subscription.findFirst({
+      where: {
+        userId: user.id,
+      }
+    });
+
+    
+    if (!getSubscription) {
+     return {
+        success: false,
+        type: 'failed',
+        message: 'No subscription found',
+        code: HttpStatus.NOT_FOUND
+      }
+    }
+    var start = new Date();
+
+    if (start > new Date(getSubscription.endDate) ){
+      start = new Date(getSubscription.startDate)
+    }
+
+    var end = new Date(getSubscription.endDate);
+
+    // add duration (day) to end date
+    const duration = plan.duration;
+    const newEndDate = new Date(end.setDate(end.getDate() + duration));
+
+
+    if (!getSubscription) {
+      const result = await this.prisma.subscription.create({
+        data: {
+          userId: user.id,
+          status: 'active',
+          startDate: start,
+          endDate: newEndDate,
+          // endDate: new Date(new Date().setMonth(new Date().getMonth() + plan.duration))
+
+        }
+      });
+    }
+
+    const ct = await this.prisma.subscriptionHistory.create({
+      data: {
+        userId: user.id,
+        subscriptionPlanId: plan.id
+      }
+    });
+
+    if (!ct) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Error creating subscription history',
+        code: HttpStatus.INTERNAL_SERVER_ERROR
+      }
+    }
+
+    if(!getSubscription){
+      return {
+        success: false,
+        type: 'false',
+        message: 'Error creating subscription',
+        code: HttpStatus.OK
+      }
+    }
+
+    //date update 
+    const updated_date = new Date(getSubscription.endDate) 
+
+    const newDate = new Date(updated_date.setDate(updated_date.getDate() + plan.duration));
+
+
+    const result = await this.prisma.subscription.update({
+      where: { id: getSubscription?.id || '' },
+      data: {
+        endDate: newDate,
+      }
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'Plan subscribed',
+      data: result,
+      code: HttpStatus.OK
+    }
   }
 }

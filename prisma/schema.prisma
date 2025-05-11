@@ -354,7 +354,7 @@ model Exercises {
   name        String
   description String @default("")
   purpose     String @default("")
-  duration    Int
+  duration    Int    @default(0)
   day         Int
 
   level       String @default("beginner")
@@ -421,10 +421,34 @@ model Subscription {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String   @db.ObjectId
   startDate   DateTime
-  expiryDate  DateTime
+  endDate     DateTime
   tag         String   @default("free")
   status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+}
+
+model SubscriptionHistory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  subscriptionPlanId String @db.ObjectId
+  SubscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
+}
+
+
+model SubscriptionPlan {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  planName    String   @default("free")
+  cost        String   @default("0")
+  duration    Int      @default(0)
+  status      String   @default("active")
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  SubscriptionHistory SubscriptionHistory[]
 }
 

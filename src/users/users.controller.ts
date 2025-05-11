@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, UseInterceptors, UploadedFile, UseGuards, Headers } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto,FileUploadDto } from './users.dto';
+import { CreateUserDto, createTeacherDto, updateTeacherDto, loginUserDto, logoutUserDto,FileUploadDto, createSubPlanDto, updateSubPlanDto } from './users.dto';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -81,4 +81,50 @@ export class UsersController {
         }
         return this.usersService.isTermAccepted( decoded.data.id);
     }
+
+
+    @Post('createPlan')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async createPlan(@Headers('Authorization') auth: string, @Body() data: createSubPlanDto) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.createPlan(data);
+    }
+
+    @Get('getPlans')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async getPlans(@Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.getPlans();
+    }
+
+    @Put('updatePlan/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async updatePlan(@Headers('Authorization') auth: string, @Param('id') id: string, @Body() data: updateSubPlanDto) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.updatePlan(id, data);
+    }
+
+    @Post('subscribePlan')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async subscribePlan(@Headers('Authorization') auth: string, @Body() data: {planId: string}) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.subscribePlan( decoded.data.id, data.planId);
+    }
+    
 }

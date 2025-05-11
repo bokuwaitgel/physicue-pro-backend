@@ -109,3 +109,28 @@ export class FileUploadDto {
     file: Express.Multer.File;
   }
 
+
+  export class createSubPlanDto {
+    @IsNotEmpty()
+    @ApiProperty()
+    planName: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    cost: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    duration: string;
+  }
+
+export class updateSubPlanDto {
+    @IsNotEmpty()
+    @ApiProperty()
+    planName: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    cost: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    duration: string;
+}
+

@@ -39,17 +39,39 @@ export class ExerciseController {
   @ApiResponse({ status: 200, description: 'Data' })
   async getExerciseById(@Param('exerciseid') exerciseid: string, @Headers('Authorization') auth: string) {
     return this.exerciseService.getExerciseById({id: exerciseid});
+
+    
   }
 
   @Post('createExercise')
-  @ApiOperation({ summary: 'Create exercise' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiResponse({ status: 200, description: 'Data' })
-  public async createExercise(@Body() data: CreateExerciseDto, @Headers('Authorization') auth: string) {
+    @ApiOperation({ summary: 'Create course' })
+    @UseInterceptors(FileInterceptor('shortVideo'))
+    @ApiResponse({ status: 200, description: 'Data' })
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    public async createCourse( 
+      @Body() data: CreateExerciseDto,
+      @UploadedFile() file: Express.Multer.File,
+      @Headers('Authorization') auth: string, ) {
 
-    return this.exerciseService.createExercise(data);
-  }
+      const decoded = await this.authService.verifyToken({token: auth});
+      if (decoded.code != 200) {
+          return decoded;
+      }
+      const userId = decoded.data.id;
+
+      return this.exerciseService.createExercise(data, file, userId);
+    }
+
+  // @Post('createExercise')
+  // @ApiOperation({ summary: 'Create exercise' })
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
+  // @ApiResponse({ status: 200, description: 'Data' })
+  // public async createExercise(@Body() data: CreateExerciseDto, @Headers('Authorization') auth: string) {
+
+  //   return this.exerciseService.createExercise(data);
+  // }
 
   @Put('updateExercise/:exerciseId')
   @ApiOperation({ summary: 'Update exercise' })
