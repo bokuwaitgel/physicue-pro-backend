@@ -126,5 +126,16 @@ export class UsersController {
         }
         return this.usersService.subscribePlan( decoded.data.id, data.planId);
     }
+
+    @Get('getSubscribedPlan')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async getSubscribedPlan(@Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.getSubscribedPlan(decoded.data.id);
+    }
     
 }

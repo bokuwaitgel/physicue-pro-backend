@@ -778,6 +778,7 @@ export class UsersService {
         data: {
           userId: user.id,
           status: 'active',
+          tag: plan.planName,
           startDate: start,
           endDate: newEndDate,
           // endDate: new Date(new Date().setMonth(new Date().getMonth() + plan.duration))
@@ -820,6 +821,7 @@ export class UsersService {
     const result = await this.prisma.subscription.update({
       where: { id: getSubscription?.id || '' },
       data: {
+        tag: plan.planName,
         endDate: newDate,
       }
     });
@@ -831,5 +833,40 @@ export class UsersService {
       data: result,
       code: HttpStatus.OK
     }
+  }
+
+  async getSubscribedPlan(userId: string): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'User does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    const subscriptionHistory = await this.prisma.subscriptionHistory.findMany({
+      where: {
+        userId: user.id
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 1
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'Subscribed plan found',
+      data: subscriptionHistory,
+      code: HttpStatus.OK
+    }
+
   }
 }
