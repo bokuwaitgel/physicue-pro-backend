@@ -278,11 +278,22 @@ export class AuthService {
       };
     }
 
+    const subscription = await this.prisma.subscription.create({
+      data: {
+        userId: newUser.id,
+        tag: 'free',
+        status: 'active',
+        startDate: new Date(),
+        endDate: new Date() // 1 year from now
+      },
+    });
+
     const userRes = await this.prisma.user.update({
       where: {
         id: newUser.id,
       },
       data: {
+        subscriptionId: subscription.id,
         refreshToken: tokenRefresh.refreshToken,
         refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
       },

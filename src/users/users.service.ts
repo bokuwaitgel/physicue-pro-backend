@@ -300,6 +300,25 @@ export class UsersService {
       }
     });
 
+    let subs = await this.prisma.subscription.findFirst({
+      where: {
+        userId: user.id
+      }
+    });
+
+    if (!subs) {
+      const subscription = await this.prisma.subscription.create({
+        data: {
+          userId: user.id,
+          tag: 'free',
+          status: 'active',
+          startDate: user.createdAt,
+          endDate: user.createdAt,
+        },
+      });
+      subs = subscription;
+    }
+
     return {
       success: true,
       type: 'success',
@@ -308,7 +327,8 @@ export class UsersService {
         user: {
           ...user,
           role: teacher ? 'teacher' : 'user',
-          persona: body
+          persona: body,
+          subscription: subs
         },
         is_teacher: teacher ? true : false,
         teacher_id: teacher ? teacher.id : ''
