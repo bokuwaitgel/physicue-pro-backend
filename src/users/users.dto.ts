@@ -120,6 +120,10 @@ export class FileUploadDto {
     @IsNotEmpty()
     @ApiProperty()
     duration: string;
+    @ApiProperty()
+    description: string;
+    @ApiProperty()
+    image: string;
   }
 
 export class updateSubPlanDto {
@@ -132,5 +136,9 @@ export class updateSubPlanDto {
     @IsNotEmpty()
     @ApiProperty()
     duration: string;
+    @ApiProperty()
+    description: string;
+    @ApiProperty()
+    image: string;
 }
 
