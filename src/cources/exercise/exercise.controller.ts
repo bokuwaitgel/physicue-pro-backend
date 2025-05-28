@@ -39,8 +39,6 @@ export class ExerciseController {
   @ApiResponse({ status: 200, description: 'Data' })
   async getExerciseById(@Param('exerciseid') exerciseid: string, @Headers('Authorization') auth: string) {
     return this.exerciseService.getExerciseById({id: exerciseid});
-
-    
   }
 
   @Post('createExercise')
@@ -63,15 +61,6 @@ export class ExerciseController {
       return this.exerciseService.createExercise(data, file, userId);
     }
 
-  // @Post('createExercise')
-  // @ApiOperation({ summary: 'Create exercise' })
-  // @ApiBearerAuth()
-  // @UseGuards(JwtAuthGuard)
-  // @ApiResponse({ status: 200, description: 'Data' })
-  // public async createExercise(@Body() data: CreateExerciseDto, @Headers('Authorization') auth: string) {
-
-  //   return this.exerciseService.createExercise(data);
-  // }
 
   @Put('updateExercise/:exerciseId')
   @ApiOperation({ summary: 'Update exercise' })
@@ -133,6 +122,20 @@ export class ExerciseController {
     @Headers('Authorization') auth: string
   ) {
     return this.exerciseService.uploadExerciseVideo(id, file);
+  }
+
+  @Post('checkExerciseExpiry/:exerciseId')
+  @ApiOperation({ summary: 'Check exercise expiry' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async checkExerciseExpiry(@Headers('Authorization') auth: string, @Param('exerciseId') exerciseId: string) {
+    const decoded = await this.authService.verifyToken({token: auth});
+    if (decoded.code != 200) {
+        return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.exerciseService.checkExerciseExpiry(userId, exerciseId);
   }
 
 }

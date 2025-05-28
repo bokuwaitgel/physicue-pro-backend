@@ -366,4 +366,70 @@ export class ExerciseService {
     }
   }
 
+  async checkExerciseExpiry(userId: string, exerciseId: string) {
+    const exercise = await this.prisma.exercises.findUnique({
+      where: {
+        id: exerciseId
+      }
+    });
+
+    if(!exercise) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Exercise not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+
+    const currentDate = new Date();
+
+    //get exercise courseId
+    const courseExercise = await this.prisma.courseExercises.findFirst({
+      where: {
+        exerciseId: exerciseId
+      }
+    });
+    if(!courseExercise) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Exercise not found in any course',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+    
+    const enrolled = await this.prisma.courseEnrollment.findFirst({
+      where: {
+        courseId: courseExercise.courseId,
+        userId: userId
+      }
+    });
+
+    //check course watch able
+    if(!enrolled) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'User not enrolled in course',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+
+    const expiryDate = new Date(new Date(enrolled.createdAt).getTime() + (exercise.day * 24 * 60 * 60 * 1000)); // Adding days to the enrollment date
+
+    return {
+      status: true,
+      type: 'success',
+      message: 'Expired exercises fetched',
+      code : HttpStatus.OK,
+      data: {
+        is_locked:  (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1),
+        expiry_date: expiryDate,
+        current_date: currentDate,
+      }
+    }
+  }
+
+
 }

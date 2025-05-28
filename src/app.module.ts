@@ -19,6 +19,10 @@ import { AuthController } from './auth/auth.controller';
 import { EventController } from './groups/event/event.controller';
 import { EventService } from './groups/event/event.service';
 import { EventModule } from './groups/event/event.module';
+import { ProductController } from './product/product.controller';
+import { ProductService } from './product/product.service';
+import { ProductModule } from './product/product.module';
+import { NotiModule } from './noti/noti.module';
 
 
 import config from './config';
@@ -35,9 +39,11 @@ import config from './config';
     GroupsModule,
     CourcesModule,
     AuthModule,
-    EventModule,  
+    EventModule,
+    ProductModule,
+    NotiModule,  
   ],
-  controllers: [AppController, AuthController, EventController],
-  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService],
+  controllers: [AppController, AuthController, EventController, ProductController],
+  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService, ProductService],
 })
 export class AppModule {}
