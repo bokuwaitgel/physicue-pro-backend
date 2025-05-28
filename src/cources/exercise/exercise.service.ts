@@ -424,7 +424,7 @@ export class ExerciseService {
       message: 'Expired exercises fetched',
       code : HttpStatus.OK,
       data: {
-        is_locked:  (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1),
+        is_locked: (exercise.day + enrolled.createdAt.getDate()) !== (new Date().getDate() + 1),
         expiry_date: expiryDate,
         current_date: currentDate,
       }
