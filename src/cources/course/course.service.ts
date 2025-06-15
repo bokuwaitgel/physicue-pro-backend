@@ -272,11 +272,21 @@ export class CourseService {
       }
     });
 
+    const is_teacher = await this.prisma.teacher.findFirst({
+      where: {
+        userId: userId
+      }
+    });
+
+
+
     const result = res.map((course) => {
       const enrolled = userEnrolled.find((enrollment) => enrollment.courseId === course.id);
+      const is_my_course = is_teacher ? course.teacherId === is_teacher.id : false;
       return {
         ...course,
-        enrolled: !!enrolled
+        enrolled: !!enrolled,
+        is_my_course: is_my_course
       }
     })
 

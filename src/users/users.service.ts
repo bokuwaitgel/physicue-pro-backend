@@ -723,7 +723,6 @@ export class UsersService {
     const user = await this.prisma.user.findFirst({
       where: { id: userId }
     });
-    console.log(user);
     if (!user) {
       return {
         success: false,
@@ -856,8 +855,7 @@ export class UsersService {
       },
       orderBy: {
         createdAt: 'desc'
-      },
-      take: 1
+      }
     });
 
     return {

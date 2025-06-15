@@ -66,6 +66,12 @@ model User {
   Story Story[]
 
   EventLike EventLike[]
+
+  Notification Notification[]
+
+  ProductOrder ProductOrder[]
+
+  PurchaseHistory PurchaseHistory[]
 }
 
 //   Personal         Personal?
@@ -457,5 +463,70 @@ model SubscriptionPlan {
   updatedAt   DateTime @updatedAt
 
   SubscriptionHistory SubscriptionHistory[]
+}
+
+
+model Notification {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  title       String
+  body        String
+  imageUrl    String   @default("")
+  type        String   @default("info")
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Product {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String   @default("")
+  price       Float    @default(0)
+  imageUrl    String   @default("")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ProductOrder ProductOrder[]
+
+  PurchaseHistory PurchaseHistory[]
+}
+model ProductOrder {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  productId   String   @db.ObjectId
+  quantity    Int      @default(1)
+  totalPrice  Float    @default(0)
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+  Product Product @relation(fields: [productId], references: [id])
+
+  @@index([userId])
+  @@index([productId])
+}
+
+model PurchaseHistory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  productId   String   @db.ObjectId
+  quantity    Int      @default(1)
+  totalPrice  Float    @default(0)
+  purchaseDate DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+  Product Product @relation(fields: [productId], references: [id])
+
+  @@index([userId])
+  @@index([productId])
 }
 
