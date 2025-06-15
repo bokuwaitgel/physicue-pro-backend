@@ -709,7 +709,6 @@ export class GroupsService {
     async getPopularGroups(userId: string) {
         const groups = await this.prisma.group.findMany({
             orderBy: {
-                createdAt: 'desc',
                 GroupMembers: {
                     _count: 'desc',
                 }

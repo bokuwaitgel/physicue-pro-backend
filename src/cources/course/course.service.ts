@@ -90,15 +90,19 @@ export class CourseService {
         teacherId: teacherId
       }
     });
+
+    const response = res.map((course) => {
+      return {
+        ...course,
+        is_my_course: course.teacherId === teacherId
+      }
+    });
     return {
       status: true,
       type: 'success',
       message: 'Courses fetched',
       code : HttpStatus.OK,
-      data: {
-        ...res,
-        is_my_course: true
-      }
+      data: response
     }
   }
 
@@ -223,12 +227,6 @@ export class CourseService {
       }
     });
 
-    const is_my_course = await this.prisma.courses.findFirst({
-      where: {
-        id: courseId,
-        teacherId: userId
-      }
-    });
     // check exercise locked or not if enrolled date and current date is not equal exercise.day then locked
 
     const mapped_exercises = exercise_details.map((exercise) => {
@@ -240,6 +238,11 @@ export class CourseService {
       }
     });
 
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        userId: userId
+      }
+    });
 
     return {
       status: true,
@@ -249,7 +252,7 @@ export class CourseService {
       data: {
         ...res,
         enrolled: !!enrolled,
-        is_my_course: !!is_my_course,
+        is_my_course: teacher?.id === res?.teacherId,
         exercises: mapped_exercises
       }
     }
@@ -260,7 +263,6 @@ export class CourseService {
     
     const res = await this.prisma.courses.findMany({
       orderBy: {
-        createdAt: 'desc',
         courseEnrollments: {
           _count: 'desc'
         }
@@ -455,17 +457,26 @@ export class CourseService {
       }
     });
 
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        userId: userId
+      }
+    });
 
+    const response = 
+      res.map((course) => {
+        return {
+          ...course,
+          is_my_course: teacher?.id === course.teacherId
+        }
+      });
 
     return {
       status: true,
       type: 'success',
       message: 'Course history fetched',
       code : HttpStatus.OK,
-      data: {
-        ...res,
-        is_my_course: userId === res[0]?.teacherId
-      }
+      data: response
     }
   }
 }
