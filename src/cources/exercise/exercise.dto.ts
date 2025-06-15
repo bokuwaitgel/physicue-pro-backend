@@ -78,3 +78,13 @@ export class addExerciseToCourseDto {
   @ApiProperty()
   exerciseId: string;
 }
+
+
+export class checkExerciseDto {
+  @IsNotEmpty()
+  @ApiProperty()
+  exerciseId: string;
+  @IsNotEmpty()
+  @ApiProperty()
+  courseId: string;
+}

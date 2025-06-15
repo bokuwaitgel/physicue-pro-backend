@@ -430,5 +430,33 @@ export class CourseService {
     }
   }
 
+
+  async courseHistory(userId: string) : Promise<unknown> {
+    const res = await this.prisma.courseEnrollment.findMany({
+      where: {
+        userId: userId
+      },
+      include: {
+        course: true,
+        teacher: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+
+
+    return {
+      status: true,
+      type: 'success',
+      message: 'Course history fetched',
+      code : HttpStatus.OK,
+      data: {
+        ...res,
+        is_my_course: userId === res[0]?.teacherId
+      }
+    }
+  }
 }
 

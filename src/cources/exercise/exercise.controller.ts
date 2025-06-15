@@ -9,7 +9,8 @@ import {
   CreateExerciseDto,
   UpdateExerciseDto,
   deleteExerciseDto,
-  addExerciseToCourseDto
+  addExerciseToCourseDto,
+  checkExerciseDto
 } from './exercise.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from 'src/auth/auth.service';
@@ -63,19 +64,19 @@ export class ExerciseController {
       return this.exerciseService.createExercise(data, file, userId);
     }
 
-  @Post('checkExercise/:exerciseId')
+  @Post('checkExercise')
   @ApiOperation({ summary: 'Check exercise' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'Data' })
-  public async checkExercise(@Param('exerciseId') exerciseId: string, @Body() data: any, @Headers('Authorization') auth: string) {
+  public async checkExercise(data: checkExerciseDto, @Headers('Authorization') auth: string) {
     const decoded = await this.authService.verifyToken({token: auth});
       if (decoded.code != 200) {
           return decoded;
       }
       const userId = decoded.data.id;
     
-    return this.exerciseService.checkExercise(exerciseId, data);
+    return this.exerciseService.checkExercise(data.exerciseId, data.courseId, userId);
   }
 
 

@@ -366,14 +366,68 @@ export class ExerciseService {
     }
   }
 
-  async checkExercise(exerciseId: string, data: any) : Promise<unknown> {
+  async checkExercise(exerciseId: string, courseId: string,  userId: string) : Promise<unknown> {
     
+    const course = await this.prisma.courses.findUnique({
+      where: {
+        id: courseId
+      }
+    });
+
+    const exercise = await this.prisma.exercises.findUnique({
+      where: {
+        id: exerciseId
+      }
+    });
+
+    if(!course) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Course  not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+    if(!exercise) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Exercise not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+
+    const enrolled = await this.prisma.courseEnrollment.findFirst({
+      where: {
+        courseId: courseId,
+        userId: userId
+      }
+    });
+
+    const is_locked = enrolled ? (
+      (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1) ? false : true
+    ) : true
+
     return {
       status: true,
       type: 'success',
       message: 'Exercise checked',
       code : HttpStatus.OK,
-      data: 'res'
+      data: {
+        enrolled: enrolled ? true : false,
+        is_locked: is_locked,
+        exercise: {
+          id: exercise.id,
+          name: exercise.name,
+          description: exercise.description,
+          purpose: exercise.purpose,
+          day: exercise.day,
+          level: exercise.level,
+          type: exercise.type,
+          image: exercise.image,
+          video: exercise.video
+        }
+      }
     }
   }
 
