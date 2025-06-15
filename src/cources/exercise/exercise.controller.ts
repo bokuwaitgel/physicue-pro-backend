@@ -75,6 +75,8 @@ export class ExerciseController {
           return decoded;
       }
       const userId = decoded.data.id;
+      
+    console.log('checkExercise', data, userId);
     
     return this.exerciseService.checkExercise(data.exerciseId, data.courseId, userId);
   }
