@@ -713,8 +713,7 @@ export class GroupsService {
                 GroupMembers: {
                     _count: 'desc',
                 }
-            },
-
+            }
         });
         //check user is in group
         const groupMembers = await this.prisma.groupMembers.findMany({
