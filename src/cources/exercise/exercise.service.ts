@@ -366,4 +366,15 @@ export class ExerciseService {
     }
   }
 
+  async checkExercise(exerciseId: string, data: any) : Promise<unknown> {
+    
+    return {
+      status: true,
+      type: 'success',
+      message: 'Exercise checked',
+      code : HttpStatus.OK,
+      data: 'res'
+    }
+  }
+
 }

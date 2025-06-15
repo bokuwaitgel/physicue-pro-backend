@@ -625,7 +625,7 @@ export class GroupsService {
         }
     }
     
-    async getGroupCourses(groupId: string) {
+    async getGroupCourses(groupId: string, userId: string) {
         //check if group exists
         const group = await this.prisma.group.findUnique({
             where: {
@@ -640,6 +640,8 @@ export class GroupsService {
                 code: HttpStatus.NOT_FOUND,
             }
         }
+
+        const is_my_group = group.adminId === userId;
 
         const courses = await this.prisma.groupCourses.findMany({
             where: {
@@ -657,11 +659,19 @@ export class GroupsService {
             },
         });
 
+        const res = course_data.map(course => {
+            return {
+                ...course,
+                is_my_group: is_my_group,
+                is_my_course: is_my_group && course.teacherId === userId,
+            }
+        })
+
         return {
             success: true,
             type: 'success',
             message: 'Group courses fetched',
-            data: course_data,
+            data: res,
             code: HttpStatus.OK,
         }
     }
@@ -683,6 +693,7 @@ export class GroupsService {
             return {
                 ...group,
                 is_member: isMember,
+                is_my_group: group.adminId === userId,
             }
         })
 
@@ -690,6 +701,40 @@ export class GroupsService {
             success: true,
             type: 'success',
             message: 'Groups fetched',
+            data: groupsData,
+            code: HttpStatus.OK,
+        }
+    }
+
+    async getPopularGroups(userId: string) {
+        const groups = await this.prisma.group.findMany({
+            orderBy: {
+                createdAt: 'desc',
+                GroupMembers: {
+                    _count: 'desc',
+                }
+            },
+
+        });
+        //check user is in group
+        const groupMembers = await this.prisma.groupMembers.findMany({
+            where: {
+                userId: userId,
+            },
+        });
+        const groupIds = groupMembers.map(group => group.groupId);
+        const groupsData = groups.map(group => {
+            const isMember = groupIds.includes(group.id);
+            return {
+                ...group,
+                is_member: isMember,
+                is_my_group: group.adminId === userId,
+            }
+        })
+        return {
+            success: true,
+            type: 'success',
+            message: 'Popular groups fetched',
             data: groupsData,
             code: HttpStatus.OK,
         }

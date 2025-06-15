@@ -128,8 +128,15 @@ export class GroupsController {
     @Get('group/course/:groupId')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
-    getCourse(@Param('groupId') groupId: string) {
-        return this.groupsService.getGroupCourses(groupId);
+    async getCourse(@Param('groupId') groupId: string, @Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        
+
+        return this.groupsService.getGroupCourses(groupId, userId);
     }
 
     @Get('')
@@ -142,6 +149,18 @@ export class GroupsController {
         }
         const userId = decoded.data.id;
         return this.groupsService.getGroup(userId);
+    }
+
+    @Get('popular')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    async getPopGroups(@Headers('Authorization') auth: string) {
+        const decoded = await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        return this.groupsService.getPopularGroups(userId);
     }
 
     @Get('groupDetail/:id')

@@ -95,7 +95,10 @@ export class CourseService {
       type: 'success',
       message: 'Courses fetched',
       code : HttpStatus.OK,
-      data: res
+      data: {
+        ...res,
+        is_my_course: true
+      }
     }
   }
 
@@ -219,6 +222,13 @@ export class CourseService {
         day: 'asc'
       }
     });
+
+    const is_my_course = await this.prisma.courses.findFirst({
+      where: {
+        id: courseId,
+        teacherId: userId
+      }
+    });
     // check exercise locked or not if enrolled date and current date is not equal exercise.day then locked
 
     const mapped_exercises = exercise_details.map((exercise) => {
@@ -239,6 +249,7 @@ export class CourseService {
       data: {
         ...res,
         enrolled: !!enrolled,
+        is_my_course: !!is_my_course,
         exercises: mapped_exercises
       }
     }
@@ -249,7 +260,10 @@ export class CourseService {
     
     const res = await this.prisma.courses.findMany({
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
+        courseEnrollments: {
+          _count: 'desc'
+        }
       }
     });
     const userEnrolled = await this.prisma.courseEnrollment.findMany({
