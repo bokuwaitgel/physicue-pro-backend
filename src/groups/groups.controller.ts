@@ -35,7 +35,7 @@ export class GroupsController {
         return this.groupsService.updateGroup(id, updateGroupDto);
     }
 
-    @Get(':teacherId')
+    @Get('getTeacher/:teacherId')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
     async getGroups(@Param('teacherId') teacherId: string, @Headers('Authorization') auth: string) {
