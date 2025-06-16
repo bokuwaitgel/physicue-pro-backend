@@ -25,4 +25,4 @@ const serviceAccountPath = 'serviceAccountKey.json';
   ],
   exports: ['APP_FIREBASE'],
 })
-export class NotificationModule {}
+export class NotiModule {}
