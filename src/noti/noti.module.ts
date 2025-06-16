@@ -4,7 +4,7 @@ import { NotiController } from './noti.controller';
 import { FirebaseNotificationService } from './noti.service';
 import * as admin from 'firebase-admin';
 
-const serviceAccountPath = 'serviceAccountKey.json';
+const serviceAccountPath = '../../serviceAccountKey.json';
 @Global()
 @Module({
   controllers: [NotiController],
