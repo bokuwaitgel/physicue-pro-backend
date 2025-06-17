@@ -137,6 +137,8 @@ export class AuthService {
       },
     });
 
+    console.log(loginUserDto)
+
     //check fcmToken
     if (loginUserDto.fcmToken && user.fcmToken !== loginUserDto.fcmToken) {
       await this.prisma.user.update({
