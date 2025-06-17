@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
 @Injectable()
-export class FirebaseNotificationService {
+export class NotiService {
   constructor(
     @Inject('APP_FIREBASE') private readonly physicue_pro: admin.app.App,
   ) {}

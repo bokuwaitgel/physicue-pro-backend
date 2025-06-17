@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { NotiController } from './noti.controller';
-import { FirebaseNotificationService } from './noti.service';
+import { NotiService } from './noti.service';
 import * as admin from 'firebase-admin';
 
 const serviceAccountPath = '../../serviceAccountKey.json';
@@ -9,7 +9,7 @@ const serviceAccountPath = '../../serviceAccountKey.json';
 @Module({
   controllers: [NotiController],
   providers: [
-    FirebaseNotificationService,
+    NotiService,
     PrismaService,
     {
       provide: 'APP_FIREBASE',

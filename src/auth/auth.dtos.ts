@@ -31,6 +31,9 @@ export class LoginUserDto {
   @ApiProperty()
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty()
+  fcmToken: string;
 }
 export class ResetPasswordDto {
   @ApiProperty()

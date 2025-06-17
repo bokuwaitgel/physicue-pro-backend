@@ -136,6 +136,18 @@ export class AuthService {
         refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
       },
     });
+
+    //check fcmToken
+    if (loginUserDto.fcmToken && user.fcmToken !== loginUserDto.fcmToken) {
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          fcmToken: loginUserDto.fcmToken,
+        },
+      });
+    }
     
     
     return {

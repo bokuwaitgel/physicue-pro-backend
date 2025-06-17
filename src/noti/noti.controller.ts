@@ -1,11 +1,11 @@
 
 import { Body, Controller, Post } from '@nestjs/common';
-import { FirebaseNotificationService } from './noti.service';
+import { NotiService } from './noti.service';
 import { SendNotificationDto } from './noti.dtos';
 
 @Controller('noti')
 export class NotiController {
-  constructor(private readonly firebaseService: FirebaseNotificationService) {}
+  constructor(private readonly firebaseService: NotiService) {}
 
   @Post('send')
   async sendNotification(
