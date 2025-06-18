@@ -47,11 +47,12 @@ import {
       return await this.paymentService.checkInvoice(checkInvoiceDto.invoiceId);
     }
   
-    @Get('verify/:paymentId/:userId')
+    @Get('verify/:invoiceId/:userId')
     public async verifyInvoice(
-      @Param('paymentId') paymentId: string,
+      @Param('invoiceId') invoiceId: string,
       @Param('userId') userId: string,
     ) {
-      return await this.paymentService.verifyInvoice(paymentId, userId);
+      console.log('Verifying payment:', invoiceId, 'for user:', userId);
+      return await this.paymentService.verifyInvoice(invoiceId, userId);
     }
   }

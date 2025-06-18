@@ -16,7 +16,7 @@ const serviceAccountPath = '../../serviceAccountKey.json';
       useValue: admin.initializeApp(
         {
           credential: admin.credential.cert(
-            require(serviceAccountPath) as admin.ServiceAccount,
+            require(serviceAccountPath)
           ),
         },
         'physicue_pro',

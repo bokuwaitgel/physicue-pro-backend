@@ -178,7 +178,7 @@ export class PaymentService {
     };
     const url = `${this.apiUrl}/payment/check`;
 
-    
+
 
     const token = await this.prisma.qPayToken.findFirst(
       {
@@ -198,7 +198,6 @@ export class PaymentService {
     return axios
       .post(url, postData, { headers })
       .then((response) => {
-        console.log('Check Invoice Response:', response.data);
         return {
           status: true,
           type: 'success',
@@ -216,17 +215,19 @@ export class PaymentService {
   }
 
   async verifyInvoice(
-    paymentId: string,
+    invoiceId: string,
     userId: string,
   ): Promise<any> {
-    const payment = await this.prisma.payment.findUnique({
+    const payment = await this.prisma.payment.findFirst({
       where: {
-        id: paymentId,
+        invoiceId: invoiceId,
       },
       include: {
         User: true,
       },
     });
+
+    const paymentId = payment?.id;
 
     if (!payment) {
       throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
@@ -245,6 +246,7 @@ export class PaymentService {
     const response = await this.checkInvoice(checkInvoiceDto.invoiceId);
     if (response.data.status === PaymentStatus.SUCCESS) {
       // Update payment status to SUCCESS
+      console.log('Payment is successful:', paymentId);
       await this.prisma.payment.update({
         where: {
           id: paymentId,
