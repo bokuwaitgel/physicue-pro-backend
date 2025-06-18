@@ -215,19 +215,17 @@ export class PaymentService {
   }
 
   async verifyInvoice(
-    invoiceId: string,
+    paymentId: string,
     userId: string,
   ): Promise<any> {
     const payment = await this.prisma.payment.findFirst({
       where: {
-        invoiceId: invoiceId,
+        id: paymentId,
       },
       include: {
         User: true,
       },
     });
-
-    const paymentId = payment?.id;
 
     if (!payment) {
       throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
@@ -244,28 +242,29 @@ export class PaymentService {
     };
 
     const response = await this.checkInvoice(checkInvoiceDto.invoiceId);
-    if (response.data.status === PaymentStatus.SUCCESS) {
-      // Update payment status to SUCCESS
-      console.log('Payment is successful:', paymentId);
-      await this.prisma.payment.update({
-        where: {
-          id: paymentId,
-        },
-        data: {
-          status: PaymentStatus.SUCCESS,
-        },
-      });
+    if (response.data.count > 0) {
+      const transaction = await this.prisma.$transaction(
+        async (tx) => {
+          const updatedPayment = await tx.payment.updateMany({
+            where: {
+              id: paymentId,
+              status: PaymentStatus.PENDING,
+            },
+            data: {
+              status: PaymentStatus.SUCCESS,
+            },
+          });
 
-      return {
-        status: true,
-        type: 'success',
-        code: HttpStatus.OK,
-        data: response.data,
-      };
-    } else {
-      throw new PaymentNotProcessedException(
-        'Payment has not been processed yet',
+          if (updatedPayment.count == 0) {
+            throw new ResourceConflictException(
+              `Баталгаажсан гүйлгээ байна.`,
+            );
+          }
+        }
       );
+      return transaction;
+    } else {
+      throw new PaymentNotProcessedException(`Төлбөр хийгдээгүй байна.`);
     }
-  }
+  } 
 }

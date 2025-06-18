@@ -47,9 +47,9 @@ import {
       return await this.paymentService.checkInvoice(checkInvoiceDto.invoiceId);
     }
   
-    @Get('verify/:invoiceId/:userId')
+    @Get('verify/:paymentId/:userId')
     public async verifyInvoice(
-      @Param('invoiceId') invoiceId: string,
+      @Param('paymentId') invoiceId: string,
       @Param('userId') userId: string,
     ) {
       console.log('Verifying payment:', invoiceId, 'for user:', userId);
