@@ -72,6 +72,8 @@ model User {
   ProductOrder ProductOrder[]
 
   PurchaseHistory PurchaseHistory[]
+
+  Payment Payment[]
 }
 
 //   Personal         Personal?
@@ -530,3 +532,32 @@ model PurchaseHistory {
   @@index([productId])
 }
 
+model Payment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  amount      Float    @default(0)
+  invoiceId   String   @default("")
+  status      PaymentStatus @default(PENDING)
+  paymentDate DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+  @@index([userId])
+}
+
+model QPayToken {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId        String    @default("")
+  accessToken      String  
+  refreshToken     String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+  expiresIn        Int
+  refreshExpiresIn Int
+}
+
+enum PaymentStatus {
+  SUCCESS
+  PENDING
+}

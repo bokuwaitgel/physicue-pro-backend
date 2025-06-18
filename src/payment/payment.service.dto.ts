@@ -5,8 +5,9 @@ export class CreateInvoiceDto {
   @ApiProperty()
   @IsNotEmpty()
   readonly amount: number;
-
+}
+export class CheckInvoiceDto {
   @ApiProperty()
   @IsNotEmpty()
-  readonly orderId: string;
+  invoiceId: string;
 }
