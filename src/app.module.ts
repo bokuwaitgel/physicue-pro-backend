@@ -23,6 +23,7 @@ import { ProductController } from './product/product.controller';
 import { ProductService } from './product/product.service';
 import { ProductModule } from './product/product.module';
 import { NotiModule } from './noti/noti.module';
+import { NotiService } from './noti/noti.service';
 import { PaymentService } from './payment/payment.service';
 import { PaymentController } from './payment/payment.controller';
 import { PaymentModule } from './payment/payment.module';
@@ -48,6 +49,6 @@ import config from './config';
     PaymentModule,  
   ],
   controllers: [AppController, AuthController, EventController, ProductController, PaymentController],
-  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService, ProductService, PaymentService],
+  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService, ProductService, PaymentService, NotiService],
 })
 export class AppModule {}
