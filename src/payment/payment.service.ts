@@ -267,6 +267,7 @@ export class PaymentService {
           }
 
           // enroll user to course if courseId is provided
+          console.log('Payment courseId:', payment.courseId);
           if (payment.courseId) {
             const Course = await this.prisma.courses.findUnique({
               where: {
@@ -285,6 +286,7 @@ export class PaymentService {
                 courseId: payment.courseId,
               },
             });
+            console.log('Enrolled in course:', enrolCourse);
 
             if (enrolCourse) {
               // Notify the user about successful enrollment
