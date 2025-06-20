@@ -290,6 +290,8 @@ export class PaymentService {
 
             if (enrolCourse) {
               // Notify the user about successful enrollment
+              console.log('Sending notification to user for course enrollment');
+              console.log('User FCM Token:', payment.User.fcmToken);
               await this.notiService.sendNotification(
                 payment.User.fcmToken,
                 'Курсанд элсэлт амжилттай хийгдлээ',
