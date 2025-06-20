@@ -39,6 +39,7 @@ export class CourseService {
         data: {
           title: data.title,
           duration: parseInt(data.duration),
+          price: parseFloat(data.price),
           type: types,
           teacher: {
             connect: {
