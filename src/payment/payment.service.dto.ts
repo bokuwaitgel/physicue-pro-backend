@@ -5,6 +5,10 @@ export class CreateInvoiceDto {
   @ApiProperty()
   @IsNotEmpty()
   readonly amount: number;
+  @ApiProperty()
+  courseId: string;
+  @ApiProperty()
+  deeplink: string;
 }
 export class CheckInvoiceDto {
   @ApiProperty()

@@ -55,4 +55,14 @@ import {
       console.log('Verifying payment:', invoiceId, 'for user:', userId);
       return await this.paymentService.verifyInvoice(invoiceId, userId);
     }
+
+    @Get('checkPayment/:invoiceId')
+    public async checkPaymentWithInvoice(
+      @Param('invoiceId') invoiceId: string,
+    ): Promise<any> {
+      console.log('Checking payment with invoice:', invoiceId);
+      return await this.paymentService.checkPaymentWithInvoice(invoiceId);
+    }
+
+
   }

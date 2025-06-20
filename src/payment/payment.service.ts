@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import axios from 'axios';
 import { CheckInvoiceDto, CreateInvoiceDto } from './payment.service.dto';
 import { PaymentStatus, Prisma } from '@prisma/client';
-// import { FirebaseNotificationService } from 'src/notification/notification.service';
+import { NotiService } from 'src/noti/noti.service';
 import {
   PaymentNotProcessedException,
   ResourceConflictException,
@@ -13,6 +13,7 @@ import {
 export class PaymentService {
   constructor(
     private prisma: PrismaService,
+    private readonly notiService: NotiService,
     // private notificationService: FirebaseNotificationService,
   ) {}
   private readonly apiUrl = 'https://merchant.qpay.mn/v2';
@@ -102,6 +103,7 @@ export class PaymentService {
             },
           },
           amount: createInvoiceDto.amount,
+          courseId: createInvoiceDto.courseId ? createInvoiceDto.courseId : "",
         },
       });
 
@@ -166,6 +168,7 @@ export class PaymentService {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async checkInvoice(invoiceId: string): Promise<any> {
     console.log('Checking Invoice:', invoiceId);
     const postData = {
@@ -254,6 +257,68 @@ export class PaymentService {
               status: PaymentStatus.SUCCESS,
             },
           });
+          if (updatedPayment.count > 0) {
+            // Notify user about successful payment
+            await this.notiService.sendNotification(
+              payment.User.fcmToken,
+              'Төлбөр амжилттай хийгдлээ',
+              `Таны төлбөр ${payment.amount} төгрөг амжилттай хийгдлээ.`,
+            );
+          }
+
+          // enroll user to course if courseId is provided
+          if (payment.courseId) {
+            const Course = await this.prisma.courses.findUnique({
+              where: {
+                id: payment.courseId,
+              },
+            });
+
+            if (!Course) {
+              throw new HttpException('Teacher not found for the course', HttpStatus.NOT_FOUND);
+            }
+
+            const enrolCourse = await this.prisma.courseEnrollment.create({
+              data: {
+                teacherId: Course.id,
+                userId: payment.User.id,
+                courseId: payment.courseId,
+              },
+            });
+
+            if (enrolCourse) {
+              // Notify the user about successful enrollment
+              await this.notiService.sendNotification(
+                payment.User.fcmToken,
+                'Курсанд элсэлт амжилттай хийгдлээ',
+                `Та ${Course.title} курс рүү амжилттай элсэллээ.`,
+              );
+
+              const teacher = await this.prisma.teacher.findUnique({
+                where: {
+                  id: Course.teacherId,
+                },
+              });
+              if (teacher) {
+                const teacherUser = await this.prisma.user.findUnique({
+                  where: {
+                    id: teacher.userId,
+                  },
+                });
+                if (teacherUser && teacherUser.fcmToken) {
+                  await this.notiService.sendNotification(
+                    teacherUser.fcmToken,
+                    'Шинэ элсэлт',
+                    `Таны курсанд шинэ элсэлт хийгдлээ: ${payment.User.firstName}}`,
+                  );
+                }
+              }
+            }
+
+
+          }
+
+          
 
           if (updatedPayment.count == 0) {
             throw new ResourceConflictException(
@@ -267,4 +332,33 @@ export class PaymentService {
       throw new PaymentNotProcessedException(`Төлбөр хийгдээгүй байна.`);
     }
   } 
+
+  async checkPaymentWithInvoice(invoiceId: string): Promise<any> {
+    const payment = await this.prisma.payment.findFirst({
+      where: {
+        invoiceId: invoiceId,
+      },
+    });
+
+    if (!payment) {
+      throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (payment.status === PaymentStatus.SUCCESS) {
+      return {
+        status: true,
+        type: 'success',
+        code: HttpStatus.OK,
+        data: payment,
+      };
+    } else {
+      return {
+        status: false,
+        type: 'error',
+        code: HttpStatus.BAD_REQUEST,
+        message: 'Payment is not successful',
+      };
+    }
+  }
+
 }

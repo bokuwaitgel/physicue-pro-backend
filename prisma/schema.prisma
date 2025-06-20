@@ -327,6 +327,7 @@ model Courses {
 
   bannerImage String  @default("")
   shortVideo  String  @default("")
+  price       Float   @default(0)
 
   status      String  @default("active")
 
@@ -473,6 +474,7 @@ model Notification {
   userId      String   @db.ObjectId
   title       String
   body        String
+  token       String   @default("")
   imageUrl    String   @default("")
   type        String   @default("info")
   isRead      Boolean  @default(false)
@@ -537,6 +539,7 @@ model Payment {
   userId      String   @db.ObjectId
   amount      Float    @default(0)
   invoiceId   String   @default("")
+  courseId    String   @default("")
   status      PaymentStatus @default(PENDING)
   paymentDate DateTime @default(now())
   createdAt   DateTime @default(now())

@@ -12,6 +12,9 @@ export class CreateCourseDto {
   @ApiProperty()
   @IsNotEmpty()
   type: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  price: number;
 }
 
 
@@ -37,6 +40,9 @@ export class UpdateCourseDto {
   @ApiProperty()
   @IsNotEmpty()
   duration: number;
+  @ApiProperty()
+  @IsNotEmpty()
+  price: number;
 }
 
 export class deleteCourseDto {
