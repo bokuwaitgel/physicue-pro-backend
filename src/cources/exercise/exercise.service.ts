@@ -1,6 +1,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AwsS3Service } from 'src/s3.service';
+import { NotiService } from 'src/noti/noti.service';
 //dtos
 import { 
   CreateExerciseDto,
@@ -13,7 +14,10 @@ import {
 @Injectable()
 export class ExerciseService {
   
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notiService: NotiService,
+  ) {}
 
   async createExercise(data: CreateExerciseDto, video: any, userId: string) : Promise<unknown> {
     try{
@@ -241,6 +245,35 @@ export class ExerciseService {
           }
         }
       });
+
+
+      // // Notify users about the new exercise
+      // try {
+      //   const course = await this.prisma.courses.findUnique({
+      //     where: {
+      //       id: data.courseId
+      //     },
+      //     include: {
+      //       courseEnrollments: {
+      //         include: {
+      //           user: true
+      //         }
+      //       }
+      //     }
+      //   });
+      //   const users = course?.courseEnrollments.map(enrollment => enrollment.user);
+      //   if (users && users.length > 0) {
+      //     for (const user of users) {
+      //       await this.notiService.sendNotification(
+      //         user.fcmToken,
+      //         'Physicue Pro',
+      //         `${find.title}-д шинэ дасгал нэмэгдлээ`
+      //       );
+      //     }
+
+      //   }
+      // }
+
       return {
         status: true,
         type: 'success',

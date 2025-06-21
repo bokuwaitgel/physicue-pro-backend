@@ -1,12 +1,15 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AwsS3Service } from 'src/s3.service';
+import { NotiService } from 'src/noti/noti.service';
 import { CreateGroupDto,UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto, GroupCourseDto } from './group.dto';
-import { stat } from 'fs';
 
 @Injectable()
 export class GroupsService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private prisma: PrismaService,
+        private notiService: NotiService,
+    ) {}
 
     async createGroup(data: CreateGroupDto, userId: string) {
         //check if teacher exists
@@ -93,6 +96,25 @@ export class GroupsService {
                     }
                 }
             });
+
+            // send Notification to group members
+            try {
+                const groupMembers = await this.prisma.groupMembers.findMany({
+                    where: {
+                        groupId: data.groupId,
+                    },
+                });
+                const userIds = groupMembers.map(member => member.userId);
+                if (userIds.length > 0) {
+                    await this.notiService.sendNotificationToUsers(
+                        'Physicue Pro',
+                        `${group.name}-д шинэ Event нэмэгдлээ: ${data.title}`,
+                        userIds,
+                    );
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
     
             return {
                 success: true,
@@ -157,6 +179,8 @@ export class GroupsService {
                     }
                 }
             });
+
+            // send Notification to event creator
     
             return {
                 success: true,
@@ -221,6 +245,38 @@ export class GroupsService {
                     }
                 }
             });
+
+            // send Notification to both group admin and new member
+            try {
+                const groupAdmin = await this.prisma.teacher.findUnique({
+                    where: {
+                        id: group.adminId,
+                    },
+                });
+                if (groupAdmin) {
+                    const adminUser = await this.prisma.user.findUnique({
+                        where: {
+                            id: groupAdmin.userId,
+                        },
+                    });
+                    if (adminUser && adminUser.fcmToken) {
+                        await this.notiService.sendNotificationToUsers(
+                            'Physicue Pro',
+                            `${user.firstName} ${user.lastName} хэрэглэгч таны: ${group.name} нэгдлээ`,
+                            [adminUser.id],
+                        );
+                    }
+                    if (user.fcmToken) {
+                        await this.notiService.sendNotificationToUsers(
+                            'Physicue Pro',
+                            `Та ${group.name} бүлэгт нэгдлээ`,
+                            [user.id],
+                        );
+                    }
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
     
             return {
                 success: true,
@@ -301,6 +357,31 @@ export class GroupsService {
                     }
                 }
             });
+
+            // send Notification to group admin
+            try {
+                const groupAdmin = await this.prisma.teacher.findUnique({
+                    where: {
+                        id: group.adminId,
+                    },
+                });
+                if (groupAdmin) {
+                    const adminUser = await this.prisma.user.findUnique({
+                        where: {
+                            id: groupAdmin.userId,
+                        },
+                    });
+                    if (adminUser && adminUser.fcmToken) {
+                        await this.notiService.sendNotificationToUsers(
+                            'Physicue Pro',
+                            `${user.firstName} ${user.lastName} хэрэглэгч таны: ${group.name} нэгдлээ`,
+                            [adminUser.id],
+                        );
+                    }
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
     
             return {
                 success: true,
@@ -607,6 +688,25 @@ export class GroupsService {
                     }
                 }
             });
+
+            // send Notification to group members
+            try {
+                const groupMembers = await this.prisma.groupMembers.findMany({
+                where: {
+                    groupId: data.groupId,
+                    },
+                });
+                const userIds = groupMembers.map(member => member.userId);
+                if (userIds.length > 0) {
+                    await this.notiService.sendNotificationToUsers(
+                        'Physicue Pro',
+                        `${group.name}-д шинэ курс нэмэгдлээ: ${course.title}`,
+                        userIds,
+                    );
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
     
             return {
                 success: true,

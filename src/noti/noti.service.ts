@@ -54,5 +54,61 @@ export class NotiService {
         };
       }
     } 
+
+    // send notificaiton to users
+  async sendNotificationToUsers(
+    title: string,
+    body: string,
+    userIds: string[],
+  ): Promise<any> { 
+    try {
+      if (!userIds || userIds.length === 0) {
+        return {
+          message: 'Хэрэглэгчийн ID байхгүй байна',
+        };
+      }
+
+      const users = await this.prisma.user.findMany({
+        where: {
+          id: { in: userIds },
+          fcmToken: { not: "" },
+        },
+      });
+
+      if (users.length === 0) {
+        return {
+          message: 'Хэрэглэгчид олдсонгүй',
+        };
+      }
+
+      const tokens = users.map(user => user.fcmToken);
+
+      await this.physicue_pro.messaging().sendEachForMulticast({
+        notification: { title: title, body: body },
+        data: { title: title, body: body },
+        tokens: tokens,
+      });
+
+      // Save notifications to database
+      for (const user of users) {
+        await this.prisma.notification.create({
+          data: {
+            userId: user.id,
+            title: title,
+            body: body,
+            token: user.fcmToken,
+          },
+        });
+      }
+
+      return {
+        message: 'Амжилттай илгээгдлээ',
+      };
+    } catch (err) {
+      return {
+        message: err.message,
+      };
+    }
+  }
     
 }
