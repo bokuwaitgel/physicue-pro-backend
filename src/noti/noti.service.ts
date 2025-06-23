@@ -50,12 +50,6 @@ export class NotiService {
           },
         });
 
-        await this.physicue_pro.messaging().send({
-          notification: { title: title, body: body },
-          data: { title: title, body: body },
-          token: token,
-        });
-
         // Save notification to database
         if (user) {
           //detect token apn or fcm
