@@ -2,9 +2,13 @@ import { Global, Module } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { NotiController } from './noti.controller';
 import { NotiService } from './noti.service';
+
+import { AuthService } from 'src/auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from 'src/users/users.service';
+
 import * as admin from 'firebase-admin';
-import * as apn from 'apn';
-import * as fs from 'fs';
+
 
 const serviceAccountPath = '../../serviceAccountKey.json';
 const certificatePath = '../../apns-certificate.pem';
@@ -16,6 +20,9 @@ const privateKeyPath = '../../apns-private-key.pem';
   providers: [
     NotiService,
     PrismaService,
+    AuthService,
+    JwtService,
+    UsersService,
     {
       provide: 'APP_FIREBASE',
       useValue: admin.initializeApp(

@@ -10,7 +10,7 @@ import { NotiService } from 'src/noti/noti.service';
 
 @Module({
   controllers: [GroupsController],
-  providers: [GroupsService,AuthService, JwtService, UsersService, NotiService],
+  providers: [GroupsService, AuthService, JwtService, UsersService, NotiService],
   imports: [EventModule]
 })
 export class GroupsModule {}
