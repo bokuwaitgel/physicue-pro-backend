@@ -1,5 +1,5 @@
 // firebase-notification.service.ts
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as admin from 'firebase-admin';
 import * as apn from 'apn';
@@ -131,10 +131,48 @@ export class NotiService {
       }
 
       return {
+        success: true,
+        type: 'success',
+        code: HttpStatus.CREATED,            
         message: 'Амжилттай илгээгдлээ',
       };
     } catch (err) {
       return {
+        success: false,
+        type: 'error',
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: err.message,
+      };
+    }
+  }
+
+  async get_user_notifications(userId: string): Promise<any> {
+    try {
+      if (!userId) {
+        return {
+          success: false,
+          type: 'error',
+          code: HttpStatus.BAD_REQUEST,
+          message: 'Хэрэглэгчийн ID байхгүй байна',
+        };
+      }
+
+      const notifications = await this.prisma.notification.findMany({
+        where: { userId: userId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return {
+        success: true,
+        type: 'success',
+        code: HttpStatus.OK,
+        data: notifications,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        type: 'error',
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
         message: err.message,
       };
     }
