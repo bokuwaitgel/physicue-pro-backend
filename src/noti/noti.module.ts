@@ -4,6 +4,7 @@ import { NotiController } from './noti.controller';
 import { NotiService } from './noti.service';
 
 import { AuthService } from 'src/auth/auth.service';
+import { AuthModule } from 'src/auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 
@@ -36,5 +37,6 @@ const privateKeyPath = '../../apns-private-key.pem';
     },
   ],
   exports: ['APP_FIREBASE'],
+  imports: [AuthModule],
 })
 export class NotiModule {}

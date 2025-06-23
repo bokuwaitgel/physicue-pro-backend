@@ -9,7 +9,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/users/users.service';
 import { CourseService } from 'src/cources/course/course.service';
-
+import { PaymentService } from 'src/payment/payment.service';
+import { NotiService } from 'src/noti/noti.service';
 
 
 @Module({
@@ -29,7 +30,7 @@ import { CourseService } from 'src/cources/course/course.service';
     property: 'user',
     session: false,
   })],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, JwtService, PrismaService, UsersService, CourseService],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, JwtService, PrismaService, UsersService, CourseService, PaymentService, NotiService],
   controllers: [AuthController]
 })
 export class AuthModule {}
