@@ -4,6 +4,7 @@ import { NotiController } from './noti.controller';
 import { NotiService } from './noti.service';
 import * as admin from 'firebase-admin';
 import * as apn from 'apn';
+import * as fs from 'fs';
 
 const serviceAccountPath = '../../serviceAccountKey.json';
 const certificatePath = '../../apns-certificate.pem';
@@ -26,19 +27,6 @@ const privateKeyPath = '../../apns-private-key.pem';
         'physicue_pro',
       ),
     },
-    {
-      // Provide the Firebase app instance for APNs
-      provide: 'APP_FIREBASE_APNS',
-      useValue: new apn.Provider({
-        token: {
-          key: require(privateKeyPath), // Path to your APNs private key
-          keyId: '3XQW4TF383', // Replace with your actual key ID
-          teamId: 'G4894Q4JUR', // Replace with your actual team ID
-        },
-        production: false, // Set to true if using production APNs
-      }),
-
-    }
   ],
   exports: ['APP_FIREBASE'],
 })

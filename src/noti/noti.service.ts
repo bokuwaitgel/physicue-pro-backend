@@ -14,7 +14,6 @@ export enum DeviceType {
 export class NotiService {
   constructor(
     @Inject('APP_FIREBASE') private readonly physicue_pro: admin.app.App,
-    @Inject('APP_FIREBASE_APNS') private readonly apnProvider: apn.Provider,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -61,27 +60,14 @@ export class NotiService {
         if (user) {
           //detect token apn or fcm
 
-          const deviceType = this.detectDeviceType(token);
-
-          if (deviceType === DeviceType.IOS) {
-            // Send APNs notification
-            const apnNotification = new apn.Notification({
-              alert: {
-                title: title,
-                body: body,
-              },
-              topic: 'com.physique.pro', 
-            }); 
-
-            await this.apnProvider.send(apnNotification, token);
-          } else {
-            // Send FCM notification
-            await this.physicue_pro.messaging().send({
-              notification: { title: title, body: body },
-              data: { title: title, body: body },
-              token: token,
-            });
-          } 
+         
+          // Send FCM notification
+          await this.physicue_pro.messaging().send({
+            notification: { title: title, body: body },
+            data: { title: title, body: body },
+            token: token,
+          });
+  
           
           
           // await this.prisma.notification.create({
