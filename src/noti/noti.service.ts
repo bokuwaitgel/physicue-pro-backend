@@ -2,13 +2,37 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as admin from 'firebase-admin';
+import * as apn from 'apn';
+
+export enum DeviceType {
+  IOS = 'ios',
+  ANDROID = 'android',
+  WEB = 'web'
+}
 
 @Injectable()
 export class NotiService {
   constructor(
     @Inject('APP_FIREBASE') private readonly physicue_pro: admin.app.App,
+    @Inject('APP_FIREBASE_APNS') private readonly apnProvider: apn.Provider,
     private readonly prisma: PrismaService,
   ) {}
+
+  private detectDeviceType(token: string): DeviceType {
+    // APNS tokens are 64 characters hex
+    if (/^[a-fA-F0-9]{64}$/.test(token)) {
+      return DeviceType.IOS;
+    }
+    
+    // FCM tokens are longer and contain special characters
+    if (token.length > 100 && token.includes(':')) {
+      return DeviceType.ANDROID; // or WEB
+    }
+    
+    // Default to Android for FCM-like tokens
+    return DeviceType.ANDROID;
+  }
+
   async sendNotification(
     token: string,
     title: string,
@@ -35,14 +59,39 @@ export class NotiService {
 
         // Save notification to database
         if (user) {
-          await this.prisma.notification.create({
-            data: {
-              userId: user.id,
-              title: title,
-              body: body,
+          //detect token apn or fcm
+
+          const deviceType = this.detectDeviceType(token);
+
+          if (deviceType === DeviceType.IOS) {
+            // Send APNs notification
+            const apnNotification = new apn.Notification({
+              alert: {
+                title: title,
+                body: body,
+              },
+              topic: 'com.physique.pro', 
+            }); 
+
+            await this.apnProvider.send(apnNotification, token);
+          } else {
+            // Send FCM notification
+            await this.physicue_pro.messaging().send({
+              notification: { title: title, body: body },
+              data: { title: title, body: body },
               token: token,
-            },
-          });
+            });
+          } 
+          
+          
+          // await this.prisma.notification.create({
+          //   data: {
+          //     userId: user.id,
+          //     title: title,
+          //     body: body,
+          //     token: token,
+          //   },
+          // });
         }
 
         return {
