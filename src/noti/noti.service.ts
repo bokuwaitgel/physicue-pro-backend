@@ -64,14 +64,14 @@ export class NotiService {
   
           
           
-          // await this.prisma.notification.create({
-          //   data: {
-          //     userId: user.id,
-          //     title: title,
-          //     body: body,
-          //     token: token,
-          //   },
-          // });
+          await this.prisma.notification.create({
+            data: {
+              userId: user.id,
+              title: title,
+              body: body,
+              token: token,
+            },
+          });
         }
 
         return {
