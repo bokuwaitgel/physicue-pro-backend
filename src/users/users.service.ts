@@ -377,6 +377,11 @@ export class UsersService {
             data: {
                 userId: user.id,
                 description: createTeacherDto.description,
+                name: createTeacherDto.name,
+                aboutMe: createTeacherDto.aboutMe,
+                phone: createTeacherDto.phone,
+                experience: createTeacherDto.experience,
+                status: 'active',
             },
           });
 
@@ -443,8 +448,12 @@ export class UsersService {
     const result = await this.prisma.teacher.update({
       where: { id: user.id },
       data: {
+        name: updateTeacher.name ? updateTeacher.name : user.name,
         description: updateTeacher.description,
         status: updateTeacher.status ? updateTeacher.status : user.status,
+        phone: updateTeacher.phone ? updateTeacher.phone : user.phone,
+        aboutMe: updateTeacher.aboutMe ? updateTeacher.aboutMe : user.aboutMe,
+        experience: updateTeacher.experience ? updateTeacher.experience : user.experience,
       },
     });
 

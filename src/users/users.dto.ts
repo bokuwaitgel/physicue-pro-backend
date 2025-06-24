@@ -97,6 +97,8 @@ export class createTeacherDto {
     aboutMe: string;
     @ApiProperty()
     experience: string;
+    @ApiProperty()
+    name: string;
 }
 
 export class updateTeacherDto {
@@ -112,6 +114,8 @@ export class updateTeacherDto {
     experience: string;
     @ApiProperty()
     status: string;
+    @ApiProperty()
+    name: string;
 }
 
 

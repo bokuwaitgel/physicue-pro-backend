@@ -44,13 +44,10 @@ export class UsersController {
 
     @Post('teacher')
     @ApiConsumes('multipart/form-data')
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
     @UseInterceptors(FileInterceptor('file'))
     async createTeacher(
         @UploadedFile() file: Express.Multer.File,
         @Body() createTeacherDto: createTeacherDto,
-        @Headers('Authorization') auth: string
 
     ) {    
         return this.usersService.createTeacher(createTeacherDto, file);
