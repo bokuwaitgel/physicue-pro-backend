@@ -337,7 +337,7 @@ export class UsersService {
     }
   }
 
-  async createTeacher(createTeacherDto: createTeacherDto) {
+  async createTeacher(createTeacherDto: createTeacherDto, file : any,) {
     //check if user already exists
     const user = await this.prisma.user.findUnique({
       where: {
@@ -361,6 +361,8 @@ export class UsersService {
         },
     });
 
+    
+
     if (teacher) {
       return {
             success: false,
@@ -377,12 +379,23 @@ export class UsersService {
                 description: createTeacherDto.description,
             },
           });
+
+          //upload image to s3 bucket
+          if (file) {
+            await this.uploadTeacherImage(result.id, file);
+          }
+          
+          const res = await this.prisma.teacher.findUnique({
+            where: {
+              id: result.id,
+            }
+          });
       
           return {
             success: true,
             type: 'success',
             message: 'Teacher created',
-            data: result,
+            data: res,
             code: HttpStatus.CREATED,
           }
     } catch (error) {
@@ -547,6 +560,50 @@ export class UsersService {
       code: HttpStatus.OK,
     }
   }
+  }
+
+  async uploadTeacherImage(teacherId: string, data: any) {
+    const s3 = new AwsS3Service();
+    const teacher = await this.prisma.teacher.findUnique({
+      where: {
+        id: teacherId,
+      },
+    });
+    if (!teacher) {
+        return {
+            success: false,
+            type: 'failed',
+            message: 'Teacher does not exists',
+            code: HttpStatus.NOT_FOUND
+         }
+    }
+
+    try {
+      const result = await s3.uploadProfileImage(data);
+      const update = await this.prisma.teacher.update({
+        where: { id: teacherId },
+        data: {
+          teacherImage: result,
+        },
+      });
+  
+      return {
+        success: true,
+        type: 'success',
+        message: 'Teacher image uploaded',
+        data: update,
+        code: HttpStatus.OK,
+      }
+    }
+    catch (error) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Error uploading image',
+        error: error,
+        code: HttpStatus.INTERNAL_SERVER_ERROR
+      }
+    }
   }
 
   // upload profile image to s3 bucket
