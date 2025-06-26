@@ -15,6 +15,8 @@ export class CreateCourseDto {
   @ApiProperty()
   @IsNotEmpty()
   price: string;
+  @ApiProperty()
+  description: string;
 }
 
 
