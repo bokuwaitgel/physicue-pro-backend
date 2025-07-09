@@ -607,7 +607,7 @@ export class GroupsService {
 
             const membersCount = members.length;
             
-            const members_profile = await this.prisma.user.findMany({
+            let members_profile = await this.prisma.user.findMany({
                 where: {
                     id: {
                         in: members.map(member => member.userId),
@@ -625,6 +625,10 @@ export class GroupsService {
                     email: true,
                 }
             });
+
+            if (!members_profile) {
+                members_profile = [];
+            }
 
             return {
                 ...group,
@@ -866,25 +870,6 @@ export class GroupsService {
 
         const groupIds = groupMembers.map(group => group.groupId);
 
-        const groupMembersProfile = await this.prisma.user.findMany({
-            where: {
-                id: {
-                    in: groupIds,
-                }
-            },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                profileImage: true,
-                facebookAcc: true,
-                instagramAcc: true,
-                address: true,
-                mobile: true,
-                email: true,
-            }
-        });
-
         const groupsData = groups.map(async group => {
             const isMember = groupIds.includes(group.id);
             let members = await this.prisma.groupMembers.findMany({
@@ -894,7 +879,7 @@ export class GroupsService {
                 members = [];
             }
             const membersCount = members.length;
-            const groupMembersProfile = await this.prisma.user.findMany({
+            let groupMembersProfile = await this.prisma.user.findMany({
                 where: {
                     id: {
                         in: members.map(member => member.userId),
@@ -912,6 +897,10 @@ export class GroupsService {
                     email: true,
                 }
             });
+
+            if (!groupMembersProfile) {
+                groupMembersProfile = [];
+            }
             return {
                 ...group,
                 members: membersCount,
@@ -955,7 +944,7 @@ export class GroupsService {
             if (!members) {
                 members = [];
             }
-            const groupMembersProfile = await this.prisma.user.findMany({
+            let groupMembersProfile = await this.prisma.user.findMany({
                 where: {
                     id: {
                         in: members.map(member => member.userId),
@@ -973,6 +962,9 @@ export class GroupsService {
                     email: true,
                 }
             });
+            if (!groupMembersProfile) {
+                groupMembersProfile = [];
+            }
             return {
                 ...group,
                 members:members,
