@@ -938,37 +938,9 @@ export class GroupsService {
         
         const groupsData = groups.map(async group => {
             const isMember = groupIds.includes(group.id);
-            let members = await this.prisma.groupMembers.findMany({
-                where: { groupId: group.id }
-            });
-            if (!members) {
-                members = [];
-            }
-            let groupMembersProfile = await this.prisma.user.findMany({
-                where: {
-                    id: {
-                        in: members.map(member => member.userId),
-                    }
-                },
-                select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    profileImage: true,
-                    facebookAcc: true,
-                    instagramAcc: true,
-                    address: true,
-                    mobile: true,
-                    email: true,
-                }
-            });
-            if (!groupMembersProfile) {
-                groupMembersProfile = [];
-            }
+            
             return {
                 ...group,
-                members:members,
-                members_profile: groupMembersProfile,
                 is_member: isMember,
                 is_my_group: group.adminId === userId,
             }
