@@ -876,12 +876,30 @@ export class GroupsService {
             }
         });
 
-        const groupsData = groups.map(group => {
+        const groupsData = groups.map(async group => {
             const isMember = groupIds.includes(group.id);
+            const members = await this.prisma.groupMembers.findMany({
+                where: { groupId: group.id },
+                include: { user: true }
+            });
+            const membersCount = members.length;
+            const groupMembersProfile = members.map(member => {
+                return {
+                    id: member.userId,
+                    firstName: member.user.firstName,
+                    lastName: member.user.lastName,
+                    profileImage: member.user.profileImage,
+                    facebookAcc: member.user.facebookAcc,
+                    instagramAcc: member.user.instagramAcc,
+                    address: member.user.address,
+                    mobile: member.user.mobile,
+                    email: member.user.email,
+                }
+            })
             return {
                 ...group,
-                members: groupMembersProfile.length,
-                members_profile: groupMembersProfile.filter(member => member.id === group.adminId),
+                members: membersCount,
+                members_profile: groupMembersProfile,
                 is_member: isMember,
                 is_my_group: group.adminId === userId,
             }
@@ -913,9 +931,14 @@ export class GroupsService {
         });
         const groupIds = groupMembers.map(group => group.groupId);
         
-        const groupsData = groups.map(group => {
+        const groupsData = groups.map(async group => {
             const isMember = groupIds.includes(group.id);
-            const groupMembersProfile = groupMembers.filter(member => member.groupId === group.id).map(member => {
+            const members = await this.prisma.groupMembers.findMany({
+                where: { groupId: group.id },
+                include: { user: true }
+            });
+            const membersCount = members.length;
+            const groupMembersProfile = members.map(member => {
                 return {
                     id: member.userId,
                     firstName: member.user.firstName,
@@ -927,11 +950,11 @@ export class GroupsService {
                     mobile: member.user.mobile,
                     email: member.user.email,
                 }
-            });
+            })
             return {
                 ...group,
-                members: groupMembersProfile.length,
-                members_profile: groupMembersProfile.filter(member => member.id === group.adminId),
+                members:members,
+                members_profile: groupMembersProfile,
                 is_member: isMember,
                 is_my_group: group.adminId === userId,
             }
