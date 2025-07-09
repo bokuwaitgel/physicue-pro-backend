@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+// import { GroupType } from '@prisma/client';
 import { IsNotEmpty } from 'class-validator';
 
 
@@ -6,15 +7,6 @@ export class CreateGroupDto {
     @IsNotEmpty()
     @ApiProperty()
     name: string;
-//     @IsNotEmpty()
-//     @ApiProperty()
-//     description: string;
-//     @ApiProperty()
-//     bannerImage: string;
-//     @ApiProperty()
-//     requirements: string;
-    // @ApiProperty()
-    // adminId: string;
 }
 
 export class UpdateGroupDto {
@@ -35,6 +27,8 @@ export class UpdateGroupDto {
     adminId: string;
     @ApiProperty()
     status: string;
+    @ApiProperty()
+    type:[string]; // Assuming GroupType is an enum defined in your Prisma schema
 }
 
 export class  CreateEventDto {

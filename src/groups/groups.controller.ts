@@ -116,7 +116,6 @@ export class GroupsController {
         return this.groupsService.leaveGroup(data.groupId, userId);
     }
 
-    // @Post('member/remove')e
     //course
     @Post('group/course')
     @ApiBearerAuth()
