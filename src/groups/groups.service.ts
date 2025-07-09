@@ -598,10 +598,13 @@ export class GroupsService {
         // Fetch members for each group
         const groupsData = await Promise.all(groups.map(async group => {
             const isMember = groupIds.includes(group.id);
-            const members = await this.prisma.groupMembers.findMany({
+            let members = await this.prisma.groupMembers.findMany({
                 where: { groupId: group.id },
                 include: { user: true }
             });
+            if (!members) {
+                members = [];
+            }
             const membersCount = members.length;
             const membersProfile = members.map(member => {
                 return {
@@ -878,10 +881,13 @@ export class GroupsService {
 
         const groupsData = groups.map(async group => {
             const isMember = groupIds.includes(group.id);
-            const members = await this.prisma.groupMembers.findMany({
+            let members = await this.prisma.groupMembers.findMany({
                 where: { groupId: group.id },
                 include: { user: true }
             });
+            if (!members) {
+                members = [];
+            }
             const membersCount = members.length;
             const groupMembersProfile = members.map(member => {
                 return {
@@ -933,10 +939,13 @@ export class GroupsService {
         
         const groupsData = groups.map(async group => {
             const isMember = groupIds.includes(group.id);
-            const members = await this.prisma.groupMembers.findMany({
+            let members = await this.prisma.groupMembers.findMany({
                 where: { groupId: group.id },
                 include: { user: true }
             });
+            if (!members) {
+                members = [];
+            }
             const membersCount = members.length;
             const groupMembersProfile = members.map(member => {
                 return {
