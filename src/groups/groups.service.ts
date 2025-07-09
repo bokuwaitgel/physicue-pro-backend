@@ -607,7 +607,7 @@ export class GroupsService {
 
             const membersCount = members.length;
             
-            let members_profile = await this.prisma.user.findMany({
+            const members_profile = await this.prisma.user.findMany({
                 where: {
                     id: {
                         in: members.map(member => member.userId),
@@ -625,10 +625,6 @@ export class GroupsService {
                     email: true,
                 }
             });
-
-            if (!members_profile) {
-                members_profile = [];
-            }
 
             return {
                 ...group,
@@ -870,7 +866,7 @@ export class GroupsService {
 
         const groupIds = groupMembers.map(group => group.groupId);
 
-        const groupsData = groups.map(async group => {
+        const groupsData = await Promise.all(groups.map(async group => {
             const isMember = groupIds.includes(group.id);
             let members = await this.prisma.groupMembers.findMany({
                 where: { groupId: group.id }
@@ -908,7 +904,7 @@ export class GroupsService {
                 is_member: isMember,
                 is_my_group: group.adminId === userId,
             }
-        })
+        }))
 
         return {
             success: true,
@@ -931,19 +927,52 @@ export class GroupsService {
         const groupMembers = await this.prisma.groupMembers.findMany({
             where: {
                 userId: userId,
-            }
+            },
+            include: { user: true },
         });
         const groupIds = groupMembers.map(group => group.groupId);
         
-        const groupsData = groups.map(async group => {
+        const groupsData = await Promise.all(groups.map(async group => {
             const isMember = groupIds.includes(group.id);
-           
+            let members = await this.prisma.groupMembers.findMany({
+                where: { groupId: group.id }
+            });
+            if (!members) {
+                members = [];
+            }
+            const membersCount = members.length;
+            let groupMembersProfile = await this.prisma.user.findMany({
+                where: {
+                    id: {
+                        in: members.map(member => member.userId),
+                    }
+                },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    profileImage: true,
+                    facebookAcc: true,
+                    instagramAcc: true,
+                    address: true,
+                    mobile: true,
+                    email: true,
+                }
+            });
+
+            if (!groupMembersProfile) {
+                groupMembersProfile = [];
+            }
+
             return {
                 ...group,
+                members: membersCount,
+                members_profile: groupMembersProfile,
                 is_member: isMember,
                 is_my_group: group.adminId === userId,
             }
-        })
+        }))
+
         return {
             success: true,
             type: 'success',
