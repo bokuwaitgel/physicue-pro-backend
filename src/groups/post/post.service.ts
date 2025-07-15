@@ -1,10 +1,11 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AwsS3Service } from 'src/s3.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 
 @Injectable()
 export class PostService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService, private readonly s3Service: AwsS3Service) {}
 
     async createPost(createPostDto: CreatePostDto, authorId: string, file: Express.Multer.File) {
 
@@ -34,7 +35,7 @@ export class PostService {
             },
         });
 
-        if (createPostDto.type === 'video' || createPostDto.type === 'image') {
+        if (createPostDto.type === 'video') {
             //upload file to cloud storage and get the URL
             if (!file) {
                 return {
@@ -245,7 +246,7 @@ export class PostService {
         };
     }
 
-    async uploadPostContent(file: Express.Multer.File, postId: string) {
+    async uploadPostContent(file: Express.Multer.File, postId: string, type: string = 'video') {
         if (!file) {
             return {
                 success: false,
@@ -254,8 +255,38 @@ export class PostService {
                 message: 'No file uploaded',
             };
         }
-
-        const contentUrl = `posts/upload/${file.filename}`;
+        let contentUrl: string;
+        if (type === 'video') {
+            const upload = await this.s3Service.uploadWorkoutVideo(file);
+            if (!upload) {
+                return {
+                    success: false,
+                    type: 'error',
+                    code: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: 'Failed to upload video',
+                };
+            }
+            contentUrl = upload;
+        }
+        else if (type === 'image') {
+            const upload = await this.s3Service.uploadStorieImage(file);
+            if (!upload) {
+                return {
+                    success: false,
+                    type: 'error',
+                    code: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: 'Failed to upload image',
+                };
+            }
+            contentUrl = upload;
+        } else {
+            return {
+                success: false,
+                type: 'error',
+                code: HttpStatus.BAD_REQUEST,
+                message: 'Unsupported content type',
+            };
+        }
 
         const post = await this.prisma.post.update({
             where: { id: postId },
