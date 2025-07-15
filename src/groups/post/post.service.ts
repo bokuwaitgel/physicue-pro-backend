@@ -231,7 +231,7 @@ export class PostService {
         };
     }
 
-    async addPostComment(postId: string, userId: string, content: string) {
+    async addPostComment(postId: string, content: string, userId: string) {
         const comment = await this.prisma.postComment.create({
             data: {
                 postId,
