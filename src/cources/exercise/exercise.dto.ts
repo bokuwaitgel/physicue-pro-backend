@@ -16,6 +16,12 @@ export class CreateExerciseDto {
   type : string; // strength, cardio, flexibility
   @IsNotEmpty()
   courseId: string;
+
+  @ApiProperty()
+  videoType: string = 'local'; // local, youtube, vimeo
+
+  @ApiProperty()
+  videoUrl: string; // URL for youtube or vimeo, or local file path
 }
 
 export class UpdateExerciseDto {
@@ -77,6 +83,10 @@ export class addExerciseToCourseDto {
   @IsNotEmpty()
   @ApiProperty()
   exerciseId: string;
+  @ApiProperty()
+  videoType: string = 'local'; // local, youtube, vimeo
+  @ApiProperty()
+  videoUrl: string; // URL for youtube or vimeo, or local file path
 }
 
 

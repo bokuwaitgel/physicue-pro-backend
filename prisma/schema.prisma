@@ -81,12 +81,12 @@ model User {
   PurchaseHistory PurchaseHistory[]
 
   Payment Payment[]
+
+  PostLike PostLike[]
+
+  PostComment PostComment[]
 }
 
-//   Personal         Personal?
-//   Teacher          Teacher[]
-//   CourseEnrollment CourseEnrollment[]
-// }
 
 model Teacher {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -111,6 +111,8 @@ model Teacher {
   Exercises Exercises[]
   Group     Group[]
   CourseEnrollment CourseEnrollment[]
+
+  Post Post[]
 }
 
 model BodyHistory {
@@ -193,7 +195,6 @@ model MealRecipe {
   @@index([recipeId])
 }
 
-
 model GroupMembers {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   groupId   String   @db.ObjectId
@@ -234,6 +235,8 @@ model Group {
 
   adminId      String  @db.ObjectId
   admin        Teacher @relation(fields: [adminId], references: [id])
+
+  Post Post[]
 }
 
 model GroupActivities {
@@ -314,6 +317,54 @@ model EventComment {
   @@index([userId])
 }
 
+model Post {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  groupId     String   @db.ObjectId
+  authorId    String   @db.ObjectId
+  title       String
+  description String   @default("")
+  type        String   @default("text") // text, image, video
+  contentUrl  String   @default("")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  group      Group    @relation(fields: [groupId], references: [id])
+  author     Teacher     @relation(fields: [authorId], references: [id])
+  @@index([groupId])
+  PostLike PostLike[]
+  PostComment PostComment[]
+}
+
+model PostLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model PostComment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([postId])
+  @@index([userId])
+}
+
 model GroupCourses {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   groupId   String   @db.ObjectId
@@ -383,9 +434,10 @@ model Exercises {
   day         Int
 
   level       String @default("beginner")
-  type        String @default("cardio")
+  type        String @default("")
 
   image       String @default("")
+  videoType   String @default("local") // youtube, vimeo, local
   video       String @default("")
   status      String @default("active")
 
@@ -480,7 +532,6 @@ model SubscriptionPlan {
 
   SubscriptionHistory SubscriptionHistory[]
 }
-
 
 model Notification {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId

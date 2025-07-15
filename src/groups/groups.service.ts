@@ -1076,6 +1076,16 @@ export class GroupsService {
             },
         });
 
+        const posts = await this.prisma.post.findMany({
+            where: {
+                groupId,
+            },
+            include: {
+                PostLike: true,
+                PostComment: true,
+            },
+        });
+
         return {
             success: true,
             type: 'success',
@@ -1094,6 +1104,7 @@ export class GroupsService {
                 courses: groupCoursesData,
                 events: events,
                 activities: activities,
+                posts: posts,
             },
             code: HttpStatus.OK,
         }

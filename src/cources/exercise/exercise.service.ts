@@ -44,6 +44,7 @@ export class ExerciseService {
           day: parseInt(data.day),
           level: data.level,
           type: data.type,
+          videoType: data.videoType,
           teacher: {
             connect: {
               id: teacherId
@@ -60,7 +61,20 @@ export class ExerciseService {
         }
       }
 
-      const result = await this.uploadExerciseVideo(res.id, video);
+      if(data.videoType === 'local') {
+        const upload = await this.uploadExerciseVideo(res.id, video);
+      }else{
+        //update videoUrl
+        const update = await this.prisma.exercises.update({
+          where: {
+            id: res.id
+          },
+          data: {
+            video: data.videoUrl
+          }
+        });
+
+      }
 
       //check course
       const course = await this.prisma.courses.findUnique({
