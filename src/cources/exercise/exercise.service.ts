@@ -98,7 +98,7 @@ export class ExerciseService {
             }
           }
         });
-        console.log('course', tt);
+        // console.log('course', tt);
       }
 
       //get latest exercise
