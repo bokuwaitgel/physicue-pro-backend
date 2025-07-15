@@ -90,15 +90,35 @@ export class createTeacherDto {
     @IsNotEmpty()
     @ApiProperty()
     description: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    phone: string;
+    @ApiProperty()
+    aboutMe: string;
+    @ApiProperty()
+    experience: string;
+    @ApiProperty()
+    name: string;
 }
 
 export class updateTeacherDto {
     @IsNotEmpty()
     @ApiProperty()
     description: string;
+    @IsNotEmpty()
+    @ApiProperty()
+    phone: string;
+    @ApiProperty()
+    aboutMe: string;
+    @ApiProperty()
+    experience: string;
     @ApiProperty()
     status: string;
+    @ApiProperty()
+    name: string;
 }
+
+
 
 export class FileUploadDto {
     @IsNotEmpty()

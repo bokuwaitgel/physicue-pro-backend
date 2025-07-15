@@ -37,10 +37,22 @@ export class UsersController {
         return this.usersService.update(id, updateUserDto);
     }
 
+    // @Post('teacher')
+    // createTeacher(@Body() createTeacherDto: createTeacherDto) {
+    //     return this.usersService.createTeacher(createTeacherDto);
+    // }
+
     @Post('teacher')
-    createTeacher(@Body() createTeacherDto: createTeacherDto) {
-        return this.usersService.createTeacher(createTeacherDto);
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('file'))
+    async createTeacher(
+        @UploadedFile() file: Express.Multer.File,
+        @Body() createTeacherDto: createTeacherDto,
+
+    ) {    
+        return this.usersService.createTeacher(createTeacherDto, file);
     }
+
 
     @Get('teacher/:id')
     findTeacher(@Param('id') id: string) {

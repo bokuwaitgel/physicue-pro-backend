@@ -1,8 +1,10 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GroupType } from '@prisma/client';
 import { AwsS3Service } from 'src/s3.service';
 import { NotiService } from 'src/noti/noti.service';
-import { CreateGroupDto,UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto, GroupCourseDto } from './group.dto';
+import { CreateGroupDto ,UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto, GroupCourseDto } from './group.dto';
+import { map } from 'rxjs';
 
 @Injectable()
 export class GroupsService {
@@ -471,9 +473,26 @@ export class GroupsService {
             }
         }
 
+        //string list to enum conversion
+        let groupType: GroupType[] = [];
+        if (data.type && Array.isArray(data.type)) {
+            groupType = data.type.map(type => GroupType[String(type).trim() as keyof typeof GroupType]);
+        } else if (typeof data.type === 'string') {
+            groupType = (data.type as string).split(',').map(type => GroupType[type.trim() as keyof typeof GroupType]);
+        }
+        
+
         const result = await this.prisma.group.update({
             where: { id },
-            data,
+            data: {
+                name: data.name,
+                description: data.description,
+                bannerImage: data.bannerImage,
+                requirements: data.requirements,
+                adminId: data.adminId,
+                status: data.status,
+                type: groupType, // Assuming GroupType is an enum defined in your Prisma schema
+            }
         });
 
         return {
@@ -568,21 +587,52 @@ export class GroupsService {
         });
 
         //check user is in group
-        const groupMembers = await this.prisma.groupMembers.findMany({
+        const groupMember = await this.prisma.groupMembers.findMany({
             where: {
                 userId,
             },
         });
 
-        const groupIds = groupMembers.map(group => group.groupId);
+        const groupIds = groupMember.map(group => group.groupId);
 
-        const groupsData = groups.map(group => {
+        // Fetch members for each group
+        const groupsData = await Promise.all(groups.map(async group => {
             const isMember = groupIds.includes(group.id);
+            let members = await this.prisma.groupMembers.findMany({
+                where: { groupId: group.id }
+            });
+            if (!members) {
+                members = [];
+            }
+
+            const membersCount = members.length;
+            
+            const members_profile = await this.prisma.user.findMany({
+                where: {
+                    id: {
+                        in: members.map(member => member.userId),
+                    }
+                },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    profileImage: true,
+                    facebookAcc: true,
+                    instagramAcc: true,
+                    address: true,
+                    mobile: true,
+                    email: true,
+                }
+            });
+
             return {
                 ...group,
                 is_member: isMember,
+                members: membersCount,
+                members_profile: members_profile,
             }
-        })
+        }))
 
         return {
             success: true,
@@ -759,11 +809,39 @@ export class GroupsService {
             },
         });
 
-        const res = course_data.map(course => {
+        const res = course_data.map(async course => {
+            const members =await  this.prisma.courseEnrollment.findMany({
+                where: {
+                    courseId: course.id,
+                },
+            });
+            const membersCount =  members.length;
+            const membersProfile = await Promise.all(members.map(async (member) => {
+                const user = await this.prisma.user.findUnique({
+                    where: {
+                        id: member.userId,
+                    },
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        profileImage: true,
+                        facebookAcc: true,
+                        instagramAcc: true,
+                        address: true,
+                        mobile: true,
+                        email: true,
+                    }
+                });
+                return user;
+            }))
+            
             return {
                 ...course,
                 is_my_group: is_my_group,
                 is_my_course: is_my_group && course.teacherId === userId,
+                members: membersCount,
+                members_profile: membersProfile,
             }
         })
 
@@ -788,14 +866,45 @@ export class GroupsService {
 
         const groupIds = groupMembers.map(group => group.groupId);
 
-        const groupsData = groups.map(group => {
+        const groupsData = await Promise.all(groups.map(async group => {
             const isMember = groupIds.includes(group.id);
+            let members = await this.prisma.groupMembers.findMany({
+                where: { groupId: group.id }
+            });
+            if (!members) {
+                members = [];
+            }
+            const membersCount = members.length;
+            let groupMembersProfile = await this.prisma.user.findMany({
+                where: {
+                    id: {
+                        in: members.map(member => member.userId),
+                    }
+                },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    profileImage: true,
+                    facebookAcc: true,
+                    instagramAcc: true,
+                    address: true,
+                    mobile: true,
+                    email: true,
+                }
+            });
+
+            if (!groupMembersProfile) {
+                groupMembersProfile = [];
+            }
             return {
                 ...group,
+                members: membersCount,
+                members_profile: groupMembersProfile,
                 is_member: isMember,
                 is_my_group: group.adminId === userId,
             }
-        })
+        }))
 
         return {
             success: true,
@@ -819,16 +928,51 @@ export class GroupsService {
             where: {
                 userId: userId,
             },
+            include: { user: true },
         });
         const groupIds = groupMembers.map(group => group.groupId);
-        const groupsData = groups.map(group => {
+        
+        const groupsData = await Promise.all(groups.map(async group => {
             const isMember = groupIds.includes(group.id);
+            let members = await this.prisma.groupMembers.findMany({
+                where: { groupId: group.id }
+            });
+            if (!members) {
+                members = [];
+            }
+            const membersCount = members.length;
+            let groupMembersProfile = await this.prisma.user.findMany({
+                where: {
+                    id: {
+                        in: members.map(member => member.userId),
+                    }
+                },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    profileImage: true,
+                    facebookAcc: true,
+                    instagramAcc: true,
+                    address: true,
+                    mobile: true,
+                    email: true,
+                }
+            });
+
+            if (!groupMembersProfile) {
+                groupMembersProfile = [];
+            }
+
             return {
                 ...group,
+                members: membersCount,
+                members_profile: groupMembersProfile,
                 is_member: isMember,
                 is_my_group: group.adminId === userId,
             }
-        })
+        }))
+
         return {
             success: true,
             type: 'success',
@@ -893,6 +1037,25 @@ export class GroupsService {
         
         const courseIds = groupCourses.map(course => course.courseId);
 
+        const courseMembersProfile = await this.prisma.user.findMany({
+            where: {
+                id: {
+                    in: groupMembers.map(member => member.userId),
+                }
+            },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                profileImage: true,
+                facebookAcc: true,
+                instagramAcc: true,
+                address: true,
+                mobile: true,
+                email: true,
+            }       
+        });
+
         const groupCoursesData = await this.prisma.courses.findMany({
             where: {
                 id: {
@@ -927,6 +1090,7 @@ export class GroupsService {
                 is_my_group: teacher_user.id === userId,
                 is_member: groupMembers.some(member => member.userId === userId),
                 members: groupMembers.length,
+                members_profile: courseMembersProfile,
                 courses: groupCoursesData,
                 events: events,
                 activities: activities,

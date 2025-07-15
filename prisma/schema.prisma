@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // local variables course Type
 // course Type
 enum CourseType {
@@ -24,6 +23,14 @@ enum CourseType {
   CrossFit
 }
 
+enum GroupType {
+  Personal
+  Yoga
+  GYM
+  Stretch
+  Pilates
+  CrossFit
+}
 
 
 model User {
@@ -82,17 +89,22 @@ model User {
 // }
 
 model Teacher {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
 
-  description String   @default("")
+  description   String   @default("")
+  aboutMe       String   @default("")
+  experience    String   @default("")
+  teacherImage  String   @default("")
+  name          String   @default("")
+  phone         String   @default("")
 
-  rating      Float    @default(0)
-  status      String   @default("active")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  rating        Float    @default(0)
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  groupLimit  Int      @default(3)
+  groupLimit    Int      @default(3)
 
 
   Courses   Courses[]
@@ -208,6 +220,7 @@ model Group {
   requirements  String  @default("")
 
   status        String  @default("active")
+  type          GroupType[] @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
