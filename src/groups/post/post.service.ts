@@ -9,8 +9,8 @@ export class PostService {
     async createPost(createPostDto: CreatePostDto, authorId: string, file: Express.Multer.File) {
 
         //find teacherId from authorId
-        const teacher = await this.prisma.teacher.findUnique({
-            where: { id: authorId },
+        const teacher = await this.prisma.teacher.findFirst({
+            where: { userId: authorId },
         });
 
         if (!teacher) {
