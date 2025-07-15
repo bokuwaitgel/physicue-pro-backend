@@ -35,8 +35,11 @@ export class PostService {
             },
         });
 
-        if (createPostDto.type === 'video') {
+        let response = result;
+
+        if (createPostDto.type === 'video' || createPostDto.type === 'image') {
             //upload file to cloud storage and get the URL
+            console.log('File:', file);
             if (!file) {
                 return {
                     success: false,
@@ -46,8 +49,21 @@ export class PostService {
                 };
             }
             //upload file to cloud storage
-            await this.uploadPostContent(file, result.id);
+            const post = await this.uploadPostContent(file, result.id, createPostDto.type);
+
+            if (post.success) {
+                return {
+                    success: true,
+                    type: 'success',
+                    code: HttpStatus.CREATED,
+                    message: 'Post created successfully',
+                    data: post.data,
+                }
+            }
+        
         }
+
+
 
         return {
             success: true,
