@@ -437,9 +437,10 @@ export class ExerciseService {
       }
     });
 
-    const is_locked = enrolled ? (
-      (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1) ? false : true
-    ) : true
+    // const is_locked = enrolled ? (
+    //   (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1) ? false : true
+    // ) : true
+    const is_locked = false; // for now we will not lock exercises
 
     return {
       status: true,

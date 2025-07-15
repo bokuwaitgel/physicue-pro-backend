@@ -233,9 +233,10 @@ export class CourseService {
     const mapped_exercises = exercise_details.map((exercise) => {
       return {
         ...exercise,
-        is_locked: enrolled ? (
-          (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1) ? false : true
-        ) : true
+        // is_locked: enrolled ? (
+        //   (exercise.day + enrolled.createdAt.getDate()) === (new Date().getDate() + 1) ? false : true
+        // ) : true
+        is_locked: false // for now we will not lock exercises
       }
     });
 
