@@ -64,19 +64,19 @@ export class ExerciseController {
       return this.exerciseService.createExercise(data, file, userId);
     }
 
-  @Post('checkExercise')
+  @Post('checkExercise/:exerciseId')
   @ApiOperation({ summary: 'Check exercise' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'Data' })
-  public async checkExercise(data: checkExerciseDto, @Headers('Authorization') auth: string) {
+  public async checkExercise(data: checkExerciseDto, @Headers('Authorization') auth: string, @Param('exerciseId') exerciseId: string) {
     const decoded = await this.authService.verifyToken({token: auth});
       if (decoded.code != 200) {
           return decoded;
       }
       const userId = decoded.data.id;
       
-    console.log('checkExercise', data, userId);
+    console.log('checkExercise', data, userId, exerciseId);
     
     // return this.exerciseService.checkExercise(data.exerciseId, data.courseId, userId);
     return {}
