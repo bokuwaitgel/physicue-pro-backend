@@ -64,7 +64,7 @@ export class ExerciseController {
       return this.exerciseService.createExercise(data, file, userId);
     }
 
-  @Post('checkExercise/:exerciseId')
+  @Post('checkExercise')
   @ApiOperation({ summary: 'Check exercise' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -75,11 +75,8 @@ export class ExerciseController {
           return decoded;
       }
       const userId = decoded.data.id;
-      
-    console.log('checkExercise', data, userId, exerciseId);
-    
-    // return this.exerciseService.checkExercise(data.exerciseId, data.courseId, userId);
-    return {}
+
+    return this.exerciseService.checkExercise(data.exerciseId, data.courseId, userId);
   }
 
 

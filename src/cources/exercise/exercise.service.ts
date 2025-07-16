@@ -416,6 +416,15 @@ export class ExerciseService {
 
   async checkExercise(exerciseId: string, courseId: string,  userId: string) : Promise<unknown> {
     
+    if(!exerciseId || !courseId || !userId) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Exercise id, course id and user id are required',
+        code : HttpStatus.BAD_REQUEST,
+      }
+    }
+
     const course = await this.prisma.courses.findUnique({
       where: {
         id: courseId
