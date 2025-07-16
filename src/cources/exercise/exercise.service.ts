@@ -45,6 +45,7 @@ export class ExerciseService {
           level: data.level,
           type: data.type,
           videoType: data.videoType,
+          description: data?.description ? data.description : '',
           teacher: {
             connect: {
               id: teacherId

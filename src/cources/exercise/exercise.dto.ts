@@ -22,6 +22,9 @@ export class CreateExerciseDto {
 
   @ApiProperty()
   videoUrl: string; // URL for youtube or vimeo, or local file path
+
+  @ApiProperty()
+  description: string;
 }
 
 export class UpdateExerciseDto {
