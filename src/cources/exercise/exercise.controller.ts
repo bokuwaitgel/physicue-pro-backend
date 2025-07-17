@@ -69,7 +69,7 @@ export class ExerciseController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'Data' })
-  public async checkExercise(data: checkExerciseDto, @Headers('Authorization') auth: string, @Param('exerciseId') exerciseId: string) {
+  public async checkExercise(data: checkExerciseDto, @Headers('Authorization') auth: string) {
     const decoded = await this.authService.verifyToken({token: auth});
       if (decoded.code != 200) {
           return decoded;
