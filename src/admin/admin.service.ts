@@ -78,4 +78,27 @@ export class AdminService {
             accessToken: accessToken
         };
     }
+
+    async verifyToken(token: string): Promise<any> {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret');
+            return {
+                success: true,
+                type: 'success',
+                message: 'Token is valid',
+                code: HttpStatus.OK,
+                data: decoded
+            };
+        } catch (error) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Invalid token',
+                code: HttpStatus.UNAUTHORIZED
+            };
+        }
+    }
+
+    
 }
+
