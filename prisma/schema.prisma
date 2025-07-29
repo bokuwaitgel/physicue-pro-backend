@@ -32,6 +32,17 @@ enum GroupType {
   CrossFit
 }
 
+model AdminUser {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  username      String
+  password      String 
+  salt          String   @default("")
+  role          String   @default("super_admin")
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
 
 model User {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -503,7 +514,6 @@ model Subscription {
   status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
 
   User User[]
 }
