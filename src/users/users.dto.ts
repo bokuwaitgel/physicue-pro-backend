@@ -87,10 +87,8 @@ export class createTeacherDto {
     @IsNotEmpty()
     @ApiProperty()
     userId: string;
-    @IsNotEmpty()
     @ApiProperty()
     description: string;
-    @IsNotEmpty()
     @ApiProperty()
     phone: string;
     @ApiProperty()

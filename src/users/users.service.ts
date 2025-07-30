@@ -376,11 +376,11 @@ export class UsersService {
         const result = await this.prisma.teacher.create({
             data: {
                 userId: user.id,
-                description: createTeacherDto.description,
-                name: createTeacherDto.name,
-                aboutMe: createTeacherDto.aboutMe,
-                phone: createTeacherDto.phone,
-                experience: createTeacherDto.experience,
+                description: createTeacherDto.description ? createTeacherDto.description : '',
+                name: createTeacherDto.name ? createTeacherDto.name : user.firstName + ' ' + user.lastName,
+                aboutMe: createTeacherDto.aboutMe ? createTeacherDto.aboutMe : '',
+                phone: createTeacherDto.phone ? createTeacherDto.phone : user.mobile,
+                experience: createTeacherDto.experience ? createTeacherDto.experience : '',
                 status: 'active',
             },
           });
