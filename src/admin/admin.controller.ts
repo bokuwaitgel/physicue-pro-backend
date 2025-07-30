@@ -28,7 +28,6 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
     @Post('login')
-    @UseGuards(JwtAuthGuard)
     async login(@Body() loginDto: AdminLoginDto) {
         return this.adminService.login(loginDto);
     }
