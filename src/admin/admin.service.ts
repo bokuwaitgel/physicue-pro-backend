@@ -67,7 +67,7 @@ export class AdminService {
         }
 
         const payload = { sub: admin.id, email: admin.username };
-        const accessToken = jwt.sign(payload, process.env.JWT_SECRET || 'default_secret', {
+        const accessToken = jwt.sign(payload, process.env.SECRETKEY || 'phsycue-pro-secret-key', {
             expiresIn: '1d',
         });
 

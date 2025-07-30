@@ -12,7 +12,7 @@ import {
       return super.canActivate(context);
     }
     handleRequest(err, user, info) {
-      // console.log('handleRequest', err, user, info);
+      console.log('handleRequest', err, user, info);
       if (err || !user) {
         throw err || new HttpException({ message: 'Invalid token' }, 401);
       }
