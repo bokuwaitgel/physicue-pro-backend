@@ -32,6 +32,8 @@ import { PostService } from './groups/post/post.service';
 import { PostController } from './groups/post/post.controller';
 import { PostModule } from './groups/post/post.module';
 import { AdminModule } from './admin/admin.module';
+import { AdminService } from './admin/admin.service';
+import { AdminController } from './admin/admin.controller';
 
 
 import config from './config';
@@ -54,7 +56,7 @@ import config from './config';
     PaymentModule,  
     PostModule, AdminModule,
   ],
-  controllers: [AppController, AuthController, EventController, ProductController, PaymentController, NotiController, PostController],
-  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService, ProductService, PaymentService, NotiService, PostService],
+  controllers: [AppController, AuthController, EventController, ProductController, PaymentController, NotiController, PostController, AdminController],
+  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService, ProductService, PaymentService, NotiService, PostService, AdminService],
 })
 export class AppModule {}

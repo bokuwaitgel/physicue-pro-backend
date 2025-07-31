@@ -9,6 +9,6 @@ import { JwtService } from '@nestjs/jwt';
   imports: [],
   providers: [AdminService, AwsS3Service, PrismaService, JwtService],
   controllers: [AdminController],
-  exports: [AdminService],
+  exports: [AdminService, AwsS3Service, PrismaService, JwtService],
 })
 export class AdminModule {}
