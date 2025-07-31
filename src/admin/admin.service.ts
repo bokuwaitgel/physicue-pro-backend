@@ -8,6 +8,8 @@ import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { JwtPayload } from './jwt.strategy';
 
+import { PaymentStatus } from '@prisma/client';
+
 @Injectable()
 export class AdminService {
     constructor(
@@ -546,6 +548,7 @@ export class AdminService {
     async getAnalytics(): Promise<any> {
         const totalUsers = await this.prisma.user.count();
         const totalAdmins = await this.prisma.adminUser.count();
+        const totalTeachers = await this.prisma.teacher.count();
         const totalCourses = await this.prisma.courses.count();
         const totalExercises = await this.prisma.exercises.count();
         const totalGroups = await this.prisma.group.count();
@@ -556,6 +559,7 @@ export class AdminService {
                 amount: true,
             },
             where: {
+                status: PaymentStatus.SUCCESS,
                 createdAt: {
                     gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
                     lt: new Date(),
@@ -567,6 +571,7 @@ export class AdminService {
                 amount: true,
             },
             where: {
+                status: PaymentStatus.SUCCESS,
                 createdAt: {
                     gte: new Date(new Date().setDate(1)), // Start of this month
                 },
@@ -613,6 +618,7 @@ export class AdminService {
                 amount: true,
             },
             where: {
+                status: PaymentStatus.SUCCESS,
                 createdAt: {
                     gte: new Date(new Date().setMonth(new Date().getMonth() - 3)),
                 },
@@ -623,7 +629,7 @@ export class AdminService {
         });
 
         const formattedPurchases = lastThreeMonthsPurchases.map(purchase => ({
-            month: purchase.createdAt.toISOString().slice(0, 7), // Format as YYYY-MM
+            month: purchase.createdAt.toISOString().slice(0, 10), // Format as YYYY-MM-DD
             totalAmount: purchase._sum.amount || 0,
         }));
         // Return the analytics data
@@ -631,6 +637,7 @@ export class AdminService {
             totalUsers,
             totalAdmins,
             totalCourses,
+            totalTeachers,
             totalExercises,
             totalGroups,
             revenueComparison,
