@@ -1,17 +1,19 @@
-import { Injectable, HttpStatus, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, HttpStatus, UnauthorizedException, ConflictException, HttpException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AwsS3Service } from 'src/s3.service';
+import { JwtService } from '@nestjs/jwt';
 import { AdminCreateDto, AdminLoginDto } from './admin.dto';
 import { createTeacherDto } from 'src/users/users.dto';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { error } from 'console';
+import { JwtPayload } from './jwt.strategy';
 
 @Injectable()
 export class AdminService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly awsS3Service: AwsS3Service,
+        private readonly jwtService: JwtService
     ) {}
 
     async createAdmin(dto: AdminCreateDto): Promise<any> {
@@ -67,8 +69,11 @@ export class AdminService {
         }
 
         const payload = { sub: admin.id, email: admin.username };
-        const accessToken = jwt.sign(payload, process.env.SECRETKEY || 'phsycue-pro-secret-key', {
-            expiresIn: '1d',
+        const user: JwtPayload = { username: dto.username };
+        
+        const accessToken = await this.jwtService.signAsync(user, {
+            secret: process.env.SECRETKEY,
+            expiresIn: process.env.EXPIRESINACCESS,
         });
 
         return { 
@@ -644,6 +649,25 @@ export class AdminService {
             data: analytics
         };
     }
+
+    async findByLogin(username: string): Promise<any> {
+        const admin = await this.prisma.adminUser.findFirst({
+            where: { username: username },
+        });
+        if (!admin) {
+            throw new UnauthorizedException('Admin not found');
+        }
+        return admin;
+      }
+
+    async validateUser(payload: JwtPayload): Promise<any> {
+        const user = await this.findByLogin(payload.username);
+        if (!user) {
+          throw new HttpException('INVALID_TOKEN', HttpStatus.UNAUTHORIZED);
+        }
+        return user;
+      }
+    
 
 }
 
