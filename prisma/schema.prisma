@@ -96,6 +96,8 @@ model User {
   PostLike PostLike[]
 
   PostComment PostComment[]
+
+  Booking Booking[]
 }
 
 
@@ -420,6 +422,7 @@ model Courses {
   GroupCourses   GroupCourses[]
 
   @@index([teacherId])
+  Booking Booking[]
 }
 model CourseExercises {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -476,6 +479,25 @@ model CourseEnrollment {
 
   @@index([userId])
   @@index([teacherId])
+  @@index([courseId])
+  Booking Booking[]
+}
+
+model Booking {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  courseId  String   @db.ObjectId
+  enrolledId String   @db.ObjectId
+  startTime DateTime
+  endTime   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  course Courses @relation(fields: [courseId], references: [id])
+  enrolled CourseEnrollment @relation(fields: [enrolledId], references: [id])
+
+  @@index([userId])
   @@index([courseId])
 }
 

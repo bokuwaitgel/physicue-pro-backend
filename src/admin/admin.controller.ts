@@ -7,6 +7,7 @@ import {
     HttpStatus,
     Param,
     Post,
+    Put,
     Req,
     UseGuards,
   } from '@nestjs/common';
@@ -20,6 +21,11 @@ import {
     AdminLoginDto,
 } from './admin.dto';
 import { createTeacherDto } from 'src/users/users.dto';
+
+import { CreateGroupDto, UpdateGroupDto  } from 'src/groups/group.dto';
+import { CreateCourseDto, UpdateCourseDto } from 'src/cources/course/course.dto';
+import { CreateExerciseDto, UpdateExerciseDto } from 'src/cources/exercise/exercise.dto';
+
 
 import { AdminService } from './admin.service';
 
@@ -99,6 +105,20 @@ export class AdminController {
     async getGroup(@Req() req, @Param('id') id: string) {
         return this.adminService.getGroupDetails(id);
     }
+
+    @Post('createGroup/:teacherId')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async createGroup(@Body() createGroupDto: CreateGroupDto, @Param('teacherId') teacherId: string) {
+        return this.adminService.createGroup(createGroupDto, teacherId);
+    }
+
+    @Put('updateGroup/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async updateGroup(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
+        return this.adminService.updateGroup(id, updateGroupDto);
+    }
     
     @Delete('group/:id')
     @UseGuards(JwtAuthGuard)
@@ -114,6 +134,20 @@ export class AdminController {
     @ApiBearerAuth()
     async getCourses() {
         return this.adminService.getCourses();
+    }
+
+    @Post('createCourse/:teacherId')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async createCourse(@Body() createCourseDto: CreateCourseDto, @Param('teacherId') teacherId: string) {
+        return this.adminService.createCourse(createCourseDto, teacherId);
+    }
+
+    @Put('updateCourse/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async updateCourse(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
+        return this.adminService.updateCourse(id, updateCourseDto);
     }
 
     @Get('course/:id')
@@ -138,6 +172,19 @@ export class AdminController {
         return this.adminService.getExercises();
     }
 
+    @Post('createExercise/:teacherId')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async createExercise(@Body() createExerciseDto: CreateExerciseDto, @Param('teacherId') teacherId: string) {
+        return this.adminService.createExercise(createExerciseDto, teacherId);
+    }
+
+    @Put('updateExercise/:id')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async updateExercise(@Param('id') id: string, @Body() updateExerciseDto: UpdateExerciseDto) {
+        return this.adminService.updateExercise(id, updateExerciseDto);
+    }
 
     @Get('exercise/:id')
     @UseGuards(JwtAuthGuard)

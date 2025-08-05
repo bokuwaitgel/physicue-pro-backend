@@ -3,6 +3,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AwsS3Service } from 'src/s3.service';
 import { JwtService } from '@nestjs/jwt';
 import { AdminCreateDto, AdminLoginDto } from './admin.dto';
+import { CreateGroupDto, UpdateGroupDto  } from 'src/groups/group.dto';
+import { CreateCourseDto, UpdateCourseDto } from 'src/cources/course/course.dto';
+import { CreateExerciseDto, UpdateExerciseDto } from 'src/cources/exercise/exercise.dto';
 import { createTeacherDto } from 'src/users/users.dto';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
@@ -279,6 +282,47 @@ export class AdminService {
         };
     }
 
+    // Create Group
+    async createGroup(createGroupDto: CreateGroupDto, teacherId: string): Promise<any> {
+        const group = await this.prisma.group.create({
+            data: {
+                name: createGroupDto.name,
+                admin: {
+                    connect: { id: teacherId },
+                },
+            },
+        });
+        return {
+            success: true,
+            type: 'success',
+            message: 'Group created successfully',
+            code: HttpStatus.CREATED,
+            data: group
+        };
+    }
+    // Update Group
+    async updateGroup(id: string, updateGroupDto: UpdateGroupDto): Promise<any>
+    {
+        const group = await this.prisma.group.update({
+            where: { id: id },
+            data: {
+                name: updateGroupDto.name,
+                description: updateGroupDto.description,
+                bannerImage: updateGroupDto.bannerImage,
+                requirements: updateGroupDto.requirements,
+                adminId: updateGroupDto.adminId,
+                status: updateGroupDto.status,
+            },
+        });
+        return {
+            success: true,
+            type: 'success',
+            message: 'Group updated successfully',
+            code: HttpStatus.OK,
+            data: group
+        };
+    }
+
     //deleteGroup
     async deleteGroup(groupId: string): Promise<any> {
         const group = await this.prisma.group.findUnique({
@@ -339,6 +383,50 @@ export class AdminService {
             data: courses
         };
     }
+
+    async createCourse(createCourseDto: CreateCourseDto, teacherId: string): Promise<any> {
+        const course = await this.prisma.courses.create({
+            data: {
+                title: createCourseDto.title,
+                description: createCourseDto.description,
+                duration: Number(createCourseDto.duration),
+                price: Number(createCourseDto.price),
+                teacher: {
+                    connect: { id: teacherId },
+                },
+            },
+        });
+        return {
+            success: true,
+            type: 'success',
+            message: 'Course created successfully',
+            code: HttpStatus.CREATED,
+            data: course
+        };
+    }
+
+    async updateCourse(id: string, updateCourseDto: UpdateCourseDto): Promise<any> {
+        const course = await this.prisma.courses.update({
+            where: { id: id },
+            data: {
+                title: updateCourseDto.title,
+                description: updateCourseDto.description,
+                duration: Number(updateCourseDto.duration),
+                price: Number(updateCourseDto.price),
+                teacherId: updateCourseDto.teacherId,
+                bannerImage: updateCourseDto.bannerImage,
+                shortVideo: updateCourseDto.shortVideo,
+            },
+        });
+        return {
+            success: true,
+            type: 'success',
+            message: 'Course updated successfully',
+            code: HttpStatus.OK,
+            data: course    
+        };
+    }
+
     async getCourseDetails(courseId: string): Promise<any> {
         const course = await this.prisma.courses.findUnique({
             where: { id: courseId },
@@ -432,6 +520,58 @@ export class AdminService {
             data: exercises
         };
         
+    }
+
+    async createExercise(data: CreateExerciseDto,  teacherId: string): Promise<any> {
+       const res = await this.prisma.exercises.create({
+        data: {
+          name: data.name,
+          day: parseInt(data.day),
+          level: data.level,
+          type: data.type,
+          videoType: data.videoType,
+          video: data.videoUrl,
+          description: data?.description ? data.description : '',
+          teacher: {
+            connect: {
+              id: teacherId
+            }
+        }
+        }
+      });
+      if(!res){
+        return {
+          status: false,
+          type: 'error',
+          message: 'Exercise not created',
+          code : HttpStatus.BAD_REQUEST,
+        }
+      }
+    }
+
+    async updateExercise(id: string, updateExerciseDto: UpdateExerciseDto): Promise<any> {
+        const exercise = await this.prisma.exercises.update({
+            where: { id: id },
+            data: {
+                name: updateExerciseDto.name,
+                description: updateExerciseDto.description,
+                purpose: updateExerciseDto.purpose,
+                duration: updateExerciseDto.duration,
+                day: updateExerciseDto.day,
+                level: updateExerciseDto.level,
+                type: updateExerciseDto.type,
+                image: updateExerciseDto.image,
+                video: updateExerciseDto.video,
+                teacherId: updateExerciseDto.teacherId,
+            },
+        });
+        return {
+            success: true,
+            type: 'success',
+            message: 'Exercise updated successfully',
+            code: HttpStatus.OK,
+            data: exercise
+        };
     }
 
     async getExerciseDetails(exerciseId: string): Promise<any> {
@@ -674,7 +814,8 @@ export class AdminService {
         }
         return user;
       }
-    
+
+  
 
 }
 

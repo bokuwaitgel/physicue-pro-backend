@@ -8,10 +8,6 @@ import {
   UpdateCourseDto,
   deleteCourseDto,
   getCourseByIdDto,
-  CreateCourseDetailDto,
-  UpdateCourseDetailDto,
-  deleteCourseDetailDto,
-  getCourseDetailByIdDto,
 } from './course.dto';
 import { Prisma } from '@prisma/client';
 import { parse } from 'path';
@@ -247,6 +243,21 @@ export class CourseService {
       }
     });
 
+    // get latest booking for the course
+    let booking: any = null;
+    if (enrolled) {
+      booking = await this.prisma.booking.findFirst({
+        where: {
+          courseId: courseId,
+          userId: userId,
+          enrolledId: enrolled.id
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+    }
+
     return {
       status: true,
       type: 'success',
@@ -256,11 +267,11 @@ export class CourseService {
         ...res,
         enrolled: !!enrolled,
         is_my_course: teacher?.id === res?.teacherId,
-        exercises: mapped_exercises
+        exercises: mapped_exercises,
+        booking: booking ? booking : null
       }
     }
   }
-
 
   async getPopularCourses(userId: string) : Promise<unknown> {
     
@@ -428,6 +439,17 @@ export class CourseService {
         userId: userId
       }
     });
+    
+    const booking = await this.prisma.booking.create({
+      data: {
+        userId: userId,
+        courseId: courseId,
+        enrolledId: enroll.id,
+        startTime: new Date(),
+        endTime: new Date(new Date().getTime() + 24 * 60 * 60 * 1000 * course.duration), // 24 hours from now
+      }
+    });
+  
     if(!enroll){
       return {
         status: false,
@@ -441,7 +463,10 @@ export class CourseService {
       type: 'success',
       message: 'Course enrolled',
       code : HttpStatus.OK,
-      data: enroll
+      data: {
+        ...enroll,
+        booking: booking
+      }
     }
   }
 
@@ -453,7 +478,12 @@ export class CourseService {
       },
       include: {
         course: true,
-        teacher: true
+        teacher: true,
+        Booking: {
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -482,5 +512,24 @@ export class CourseService {
       data: response
     }
   }
+
+  async getCourseBooking(userId: string) : Promise<unknown> {
+    const booking = await this.prisma.booking.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    return {
+      status: true,
+      type: 'success',
+      message: 'Booking fetched',
+      code : HttpStatus.OK,
+      data: booking
+    }
+  }
 }
+
 

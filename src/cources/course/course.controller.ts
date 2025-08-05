@@ -172,5 +172,19 @@ export class CourseController {
   }
 
 
+  @Get('bookingHistory')
+  @ApiOperation({ summary: 'Get booking history' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getBookingHistory(@Headers('Authorization') auth: string) {
+    const decoded =await this.authService.verifyToken({token: auth});
+    if (decoded.code != 200) {
+        return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.courseService.getCourseBooking(userId);
+  }
+
 
 }
