@@ -8,12 +8,14 @@ import {
   PaymentNotProcessedException,
   ResourceConflictException,
 } from 'src/common/exceptions/custom.exception';
+import { CourseService } from 'src/cources/course/course.service';
 
 @Injectable()
 export class PaymentService {
   constructor(
     private prisma: PrismaService,
     private readonly notiService: NotiService,
+    private courseService: CourseService,
     // private notificationService: FirebaseNotificationService,
   ) {}
   private readonly apiUrl = 'https://merchant.qpay.mn/v2';
@@ -279,16 +281,13 @@ export class PaymentService {
               throw new HttpException('Teacher not found for the course', HttpStatus.NOT_FOUND);
             }
 
-            const enrolCourse = await this.prisma.courseEnrollment.create({
-              data: {
-                teacherId: Course.id,
-                userId: payment.User.id,
-                courseId: payment.courseId,
-              },
-            });
+            const enrolCourse = await this.courseService.enrollCourse(
+              payment.User.id,
+              payment.courseId,
+            )
             console.log('Enrolled in course:', enrolCourse);
 
-            if (enrolCourse) {
+            if (enrolCourse?.status === true) {
               // Notify the user about successful enrollment
               console.log('Sending notification to user for course enrollment');
               console.log('User FCM Token:', payment.User.fcmToken);

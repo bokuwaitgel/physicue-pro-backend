@@ -418,7 +418,13 @@ export class CourseService {
     }
   }
 
-  async enrollCourse(courseId: string, userId: string) : Promise<unknown> {
+  async enrollCourse(courseId: string, userId: string) : Promise<{
+    status: boolean,
+    type: string,
+    message: string,
+    code: HttpStatus,
+    data?: any
+  }> {
     const course = await this.prisma.courses.findUnique({
       where: {
         id: courseId
