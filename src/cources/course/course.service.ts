@@ -244,9 +244,9 @@ export class CourseService {
     });
 
     // get latest booking for the course
-    let booking: any = null;
+    let booking: any = [];
     if (enrolled) {
-      booking = await this.prisma.booking.findFirst({
+      booking = await this.prisma.booking.findMany({
         where: {
           courseId: courseId,
           userId: userId,
@@ -528,12 +528,31 @@ export class CourseService {
         createdAt: 'desc'
       }
     });
+
+    const courseIds = booking.map((b) => b.courseId);
+
+    const courses = await this.prisma.courses.findMany({
+      where: {
+        id: {
+          in: courseIds
+        }
+      }
+    });
+
+    const result = booking.map((b) => {
+      const course = courses.find((c) => c.id === b.courseId);
+      return {
+        ...b,
+        course: course ? course : null
+      }
+    });
+
     return {
       status: true,
       type: 'success',
       message: 'Booking fetched',
       code : HttpStatus.OK,
-      data: booking
+      data: result
     }
   }
 }
