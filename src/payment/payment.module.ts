@@ -8,10 +8,14 @@ import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { AuthModule } from 'src/auth/auth.module';
+import { CourseController } from 'src/cources/course/course.controller';
+import { CourseService } from 'src/cources/course/course.service';
+
 
 @Module({
   imports: [AuthModule],
-  controllers: [PaymentController, NotiController],
-  providers: [PaymentService, NotiService, PrismaService, AuthService, JwtService, UsersService],
+  controllers: [PaymentController, NotiController, CourseController],
+  providers: [PaymentService, NotiService, PrismaService, AuthService, JwtService, UsersService, CourseService],
+  exports: [PaymentService, NotiService, PrismaService, AuthService, UsersService, CourseService],
 })
 export class PaymentModule {}
