@@ -1,10 +1,10 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService, GroupTypes } from 'src/prisma/prisma.service';
 import { GroupType } from '@prisma/client';
 import { AwsS3Service } from 'src/s3.service';
 import { NotiService } from 'src/noti/noti.service';
 import { CreateGroupDto ,UpdateGroupDto, CreateEventDto, CreateEventCommentDto, GroupMemberDto, GroupCourseDto } from './group.dto';
-import { map } from 'rxjs';
+
 
 @Injectable()
 export class GroupsService {
@@ -12,6 +12,15 @@ export class GroupsService {
         private prisma: PrismaService,
         private notiService: NotiService,
     ) {}
+
+    async getGroupTypes(): Promise<any> {
+        return {
+            status: true,
+            type: 'success',
+            message: 'Group types retrieved successfully',
+            data: Object.values(GroupTypes),
+        };
+    }
 
     async createGroup(data: CreateGroupDto, userId: string) {
         //check if teacher exists

@@ -14,6 +14,13 @@ export class GroupsController {
         private authService: AuthService
     ) {}
 
+    @Get('groupTypes')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    async getGroupTypes() : Promise<any> {
+        return this.groupsService.getGroupTypes();
+    }
+
     //group
     @Post('create')
     @ApiBearerAuth()

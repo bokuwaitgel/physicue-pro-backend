@@ -7,6 +7,7 @@ import { ExerciseController } from './exercise/exercise.controller';
 import { ExerciseService } from './exercise/exercise.service';
 import { SchedulerController } from './scheduler/scheduler.controller';
 import { SchedulerService } from './scheduler/scheduler.service';
+import { ExerciseProgressModule } from './exercise-progress/exercise-progress.module';
 
 import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
@@ -18,7 +19,7 @@ import { UsersService } from 'src/users/users.service';
 import { NotiService } from 'src/noti/noti.service';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, ExerciseProgressModule],
   controllers: [CourcesController, CourseController, ExerciseController, SchedulerController, AuthController],
   providers: [CourseService, ExerciseService, SchedulerService, AuthService, JwtService, JwtStrategy, UsersService, NotiService],
 })

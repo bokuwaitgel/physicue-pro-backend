@@ -34,6 +34,9 @@ import { PostModule } from './groups/post/post.module';
 import { AdminModule } from './admin/admin.module';
 import { AdminService } from './admin/admin.service';
 import { AdminController } from './admin/admin.controller';
+import { ChallengeModule } from './challenge/challenge.module';
+import { ChallengeService } from './challenge/challenge.service';
+import { ChallengeController } from './challenge/challenge.controller';
 
 
 import config from './config';
@@ -54,9 +57,11 @@ import config from './config';
     ProductModule,
     NotiModule,
     PaymentModule,  
-    PostModule, AdminModule,
+    PostModule,
+    AdminModule,
+    ChallengeModule,
   ],
-  controllers: [AppController, AuthController, EventController, ProductController, PaymentController, NotiController, PostController, AdminController],
-  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService, ProductService, PaymentService, NotiService, PostService, AdminService],
+  controllers: [AppController, AuthController, EventController, ProductController, PaymentController, NotiController, PostController, AdminController, ChallengeController],
+  providers: [AppService, CourcesService, AwsS3Service, AuthService, JwtService, JwtStrategy, JwtAuthGuard, UsersService, PrismaService, EventService, ProductService, PaymentService, NotiService, PostService, AdminService, ChallengeService],
 })
 export class AppModule {}

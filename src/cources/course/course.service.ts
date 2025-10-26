@@ -17,6 +17,15 @@ export class CourseService {
   
   constructor(private prisma: PrismaService) {}
 
+  async courseTypes() : Promise<any> {
+    return {
+      status: true,
+      type: 'success',
+      message: 'Course types retrieved successfully',
+      data: Object.values(CourseTypes),
+    }
+  }
+
   async createCourse(data: CreateCourseDto, file : any, teacher_id: string) : Promise<unknown> {
     try{
       const parsedArray = JSON.parse(data.type);

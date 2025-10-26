@@ -31,6 +31,7 @@ import { NotiService } from 'src/noti/noti.service';
     session: false,
   })],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, JwtService, PrismaService, UsersService, CourseService, PaymentService, NotiService],
-  controllers: [AuthController]
+  controllers: [AuthController],
+  exports: [AuthService, JwtAuthGuard, JwtStrategy]
 })
 export class AuthModule {}

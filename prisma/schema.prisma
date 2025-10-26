@@ -113,6 +113,8 @@ model User {
 
 
   UserStreakCounter UserStreakCounter[]
+
+  UserExerciseProgress UserExerciseProgress[]
 }
 
 model UserStreakCounter {
@@ -506,12 +508,30 @@ model Exercises {
   image       String   @default("")
   videoType   String   @default("local") // youtube, vimeo, local
   video       String   @default("")
+  calories    Float    @default(0)
   status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   teacher         Teacher           @relation(fields: [teacherId], references: [id])
   courseExercises CourseExercises[]
+
+  UserExerciseProgress UserExerciseProgress[]
+}
+
+model UserExerciseProgress {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  exerciseId  String   @db.ObjectId
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  exercise Exercises @relation(fields: [exerciseId], references: [id])
+
+  @@index([userId])
+  @@index([exerciseId])
 }
 
 model CourseEnrollment {
@@ -711,6 +731,7 @@ model Challenge {
   duration    Int             @default(0) // in days
   point       Int             @default(0)
   type        ChallengeType[] @default([])
+  tier        ChallengeTier   @default(Beginner)
   status      String          @default("active")
   goal        String          @default("")
   createdAt   DateTime        @default(now())

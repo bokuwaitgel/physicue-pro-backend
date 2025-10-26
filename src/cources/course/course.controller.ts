@@ -23,6 +23,13 @@ export class CourseController {
     private readonly authService: AuthService
   ) {}
 
+  @Get('courseTypes')
+  @ApiOperation({ summary: 'Get course types' })
+  @ApiResponse({ status: 200, description: 'Data' })
+  async courseTypes() : Promise<any> {
+    return this.courseService.courseTypes();
+  }
+
   @Get('getCourses/:teacherId')
   @ApiOperation({ summary: 'Get all courses' })
   @ApiResponse({ status: 200, description: 'Data' })

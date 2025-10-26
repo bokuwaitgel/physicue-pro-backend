@@ -319,6 +319,31 @@ export class UsersService {
       subs = subscription;
     }
 
+    //Calories (exp)
+    const caloriesExp = await this.prisma.userCalories.findFirst({
+      where: {
+        userId: user.id
+      }
+    });
+
+    
+    //workout count that course enrolled
+    const workoutCount = await this.prisma.courseEnrollment.count({
+      where: {
+        userId: user.id
+      }
+    });
+
+    // streak count
+    const streakCount = await this.prisma.userStreakCounter.findFirst({
+      where: {
+        userId: user.id
+      }
+    });
+
+
+    // Sleep
+    
     return {
       success: true,
       type: 'success',
@@ -327,6 +352,11 @@ export class UsersService {
         user: {
           ...user,
           role: teacher ? 'teacher' : 'user',
+          top: {
+            caloriesExp: caloriesExp ? caloriesExp.calories : 0,
+            workoutCount: workoutCount,
+            streakCount: streakCount ? streakCount.streak : 0,
+          },
           persona: body,
           subscription: subs
         },
