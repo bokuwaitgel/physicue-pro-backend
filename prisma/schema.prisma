@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,8 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// local variables course Type
-// course Type
+// ============================================================================
+// ENUMS
+// ============================================================================
+
 enum CourseType {
   Yoga
   GYM
@@ -32,159 +31,214 @@ enum GroupType {
   CrossFit
 }
 
+enum PaymentStatus {
+  SUCCESS
+  PENDING
+}
+
+enum ChallengeType {
+  Cardio
+  Strength
+  Flexibility
+  Endurance
+  Balance
+}
+
+enum ChallengeTier {
+  Beginner
+  Intermediate
+  Advanced
+  Expert
+  Master
+}
+
+// ============================================================================
+// AUTHENTICATION & ADMIN
+// ============================================================================
+
 model AdminUser {
-  id            String @id @default(auto()) @map("_id") @db.ObjectId
-  username      String
-  password      String 
-  salt          String   @default("")
-  role          String   @default("super_admin")
-  isActive      Boolean  @default(true)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  username  String
+  password  String
+  salt      String   @default("")
+  role      String   @default("super_admin")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
   firstName          String?
   lastName           String?
-  email              String   @unique
-  profileImage       String   @default("")
-  address            String   @default("")
-  mobile             String   @default("")
-
-  facebookAcc        String   @default("")
-  instagramAcc       String   @default("")
-
-  // userId         String   @unique
-  firebaseToken      String   @default("")
-  fcmToken           String   @default("")
-  firebaseId         String   @default("")
-
-  pushToken          String   @default("")
-  salt               String   @default("")
-  password           String   @default("")
-  isTermAccepted     Boolean  @default(false)
+  email              String    @unique
+  profileImage       String    @default("")
+  address            String    @default("")
+  mobile             String    @default("")
+  facebookAcc        String    @default("")
+  instagramAcc       String    @default("")
+  firebaseToken      String    @default("")
+  fcmToken           String    @default("")
+  firebaseId         String    @default("")
+  pushToken          String    @default("")
+  salt               String    @default("")
+  password           String    @default("")
+  isTermAccepted     Boolean   @default(false)
   refreshToken       String?
-  refreshTokenExpiry DateTime @default(now())
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  refreshTokenExpiry DateTime  @default(now())
+  subscriptionId     String?   @db.ObjectId
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  subscriptionId     String? @db.ObjectId
-  subscription       Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscription        Subscription?         @relation(fields: [subscriptionId], references: [id])
+  CourseEnrollment    CourseEnrollment[]
+  bodyHistories       BodyHistory[]
+  sleepHistories      SleepHistory[]
+  WaterHistory        WaterHistory[]
+  CaloriesHistory     CaloriesHistory[]
+  GroupMembers        GroupMembers[]
+  EventComment        EventComment[]
+  Story               Story[]
+  EventLike           EventLike[]
+  UserCalories        UserCalories[]
+  Notification        Notification[]
+  ProductOrder        ProductOrder[]
+  PurchaseHistory     PurchaseHistory[]
+  Payment             Payment[]
+  PostLike            PostLike[]
+  PostComment         PostComment[]
+  Booking             Booking[]
+  ChallengeEnrollment ChallengeEnrollment[]
+  ChallengePoint      ChallengePoint[]
 
-  CourseEnrollment CourseEnrollment[]
-  bodyHistories    BodyHistory[]
-  sleepHistories   SleepHistory[]
-  WaterHistory     WaterHistory[]
-  CaloriesHistory  CaloriesHistory[]
-  GroupMembers     GroupMembers[]
-  EventComment     EventComment[]
 
-  Story Story[]
-
-  EventLike EventLike[]
-
-  Notification Notification[]
-
-  ProductOrder ProductOrder[]
-
-  PurchaseHistory PurchaseHistory[]
-
-  Payment Payment[]
-
-  PostLike PostLike[]
-
-  PostComment PostComment[]
-
-  Booking Booking[]
+  UserStreakCounter UserStreakCounter[]
 }
 
+model UserStreakCounter {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  streak    Int      @default(0)
+  lastDate  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+}
+
+model UserCalories {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  calories  Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+}
 
 model Teacher {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String             @db.ObjectId
+  description      String             @default("")
+  aboutMe          String             @default("")
+  experience       String             @default("")
+  teacherImage     String             @default("")
+  name             String             @default("")
+  phone            String             @default("")
+  rating           Float              @default(0)
+  status           String             @default("active")
+  groupLimit       Int                @default(3)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
-  description   String   @default("")
-  aboutMe       String   @default("")
-  experience    String   @default("")
-  teacherImage  String   @default("")
-  name          String   @default("")
-  phone         String   @default("")
-
-  rating        Float    @default(0)
-  status        String   @default("active")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  groupLimit    Int      @default(3)
-
-
-  Courses   Courses[]
-  Exercises Exercises[]
-  Group     Group[]
+  Courses          Courses[]
+  Exercises        Exercises[]
+  Group            Group[]
   CourseEnrollment CourseEnrollment[]
-
-  Post Post[]
+  Post             Post[]
 }
 
+// ============================================================================
+// HEALTH TRACKING
+// ============================================================================
+
 model BodyHistory {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String    @db.ObjectId
   weight        Float?
   height        Float?
   bodyType      String?
   age           Int?
-  goal          String? 
+  goal          String?
   gender        String?
   bodyIssue     String?
   birthDate     DateTime?
   workoutRepeat String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  User          User    @relation(fields: [userId], references: [id])
-  userId        String  @db.ObjectId
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
 }
 
 model SleepHistory {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  sleepTime  DateTime
-  wakeTime   DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  User       User?    @relation(fields: [userId], references: [id])
-  userId     String?  @db.ObjectId
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?   @db.ObjectId
+  sleepTime DateTime
+  wakeTime  DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  User User? @relation(fields: [userId], references: [id])
 }
 
 model WaterHistory {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String?  @db.ObjectId
   waterIntake Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  User   User?   @relation(fields: [userId], references: [id])
-  userId String? @db.ObjectId
+  User User? @relation(fields: [userId], references: [id])
 }
 
 model CaloriesHistory {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String?  @db.ObjectId
   name           String
   caloriesIntake Float
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  User   User?   @relation(fields: [userId], references: [id])
-  userId String? @db.ObjectId
+  User User? @relation(fields: [userId], references: [id])
+}
+
+// ============================================================================
+// MEALS & RECIPES
+// ============================================================================
+
+
+model UserMealTrackerDaily {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  date      DateTime
+  kcal      Float    @default(0)
+  protein   Float    @default(0)
+  carbs     Float    @default(0)
+  fats      Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Meal {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   mealType String
   mealTime DateTime
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  mealRecipes      MealRecipe[]
+  mealRecipes MealRecipe[]
 }
 
 model Recipe {
@@ -199,13 +253,39 @@ model Recipe {
 
 model MealRecipe {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
-  meal     Meal   @relation(fields: [mealId], references: [id])
   mealId   String @db.ObjectId
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
   recipeId String @db.ObjectId
+
+  meal   Meal   @relation(fields: [mealId], references: [id])
+  recipe Recipe @relation(fields: [recipeId], references: [id])
 
   @@index([mealId])
   @@index([recipeId])
+}
+
+// ============================================================================
+// GROUPS & SOCIAL
+// ============================================================================
+
+model Group {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  adminId      String      @db.ObjectId
+  name         String
+  description  String      @default("")
+  bannerImage  String      @default("")
+  requirements String      @default("")
+  status       String      @default("active")
+  type         GroupType[] @default([])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  admin           Teacher           @relation(fields: [adminId], references: [id])
+  groupActivities GroupActivities[]
+  Story           Story[]
+  GroupMembers    GroupMembers[]
+  GroupCourses    GroupCourses[]
+  Event           Event[]
+  Post            Post[]
 }
 
 model GroupMembers {
@@ -214,42 +294,15 @@ model GroupMembers {
   userId    String   @db.ObjectId
   Role      String   @default("member")
   status    String   @default("active")
+  rating    Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  rating    Float    @default(0)
 
   group Group @relation(fields: [groupId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
 
   @@index([groupId])
   @@index([userId])
-}
-
-model Group {
-  id            String  @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  description   String  @default("")
-  bannerImage   String  @default("")
-  // admin         String  @db.ObjectId
-  requirements  String  @default("")
-
-  status        String  @default("active")
-  type          GroupType[] @default([])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  groupActivities GroupActivities[]
-
-  Story        Story[]
-  GroupMembers GroupMembers[]
-  GroupCourses GroupCourses[]
-  Event        Event[]
-
-  adminId      String  @db.ObjectId
-  admin        Teacher @relation(fields: [adminId], references: [id])
-
-  Post Post[]
 }
 
 model GroupActivities {
@@ -274,27 +327,27 @@ model Story {
 
   Group Group @relation(fields: [GroupId], references: [id])
   User  User  @relation(fields: [userId], references: [id])
-
 }
+
+// ============================================================================
+// EVENTS
+// ============================================================================
 
 model Event {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  groupId     String   @db.ObjectId
   title       String
   description String   @default("")
   startTime   DateTime
-  endTime     DateTime 
+  endTime     DateTime
   location    String   @default("")
-
   imageURL    String   @default("")
   status      String   @default("active")
-  
+  createdBy   String   @db.ObjectId
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  createdBy   String   @db.ObjectId
 
-  group       Group    @relation(fields: [groupId], references: [id])
-  groupId     String   @db.ObjectId
-
+  group        Group          @relation(fields: [groupId], references: [id])
   EventLike    EventLike[]
   EventComment EventComment[]
 
@@ -330,6 +383,10 @@ model EventComment {
   @@index([userId])
 }
 
+// ============================================================================
+// POSTS
+// ============================================================================
+
 model Post {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   groupId     String   @db.ObjectId
@@ -342,11 +399,12 @@ model Post {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  group      Group    @relation(fields: [groupId], references: [id])
-  author     Teacher     @relation(fields: [authorId], references: [id])
-  @@index([groupId])
-  PostLike PostLike[]
+  group       Group         @relation(fields: [groupId], references: [id])
+  author      Teacher       @relation(fields: [authorId], references: [id])
+  PostLike    PostLike[]
   PostComment PostComment[]
+
+  @@index([groupId])
 }
 
 model PostLike {
@@ -378,6 +436,34 @@ model PostComment {
   @@index([userId])
 }
 
+// ============================================================================
+// COURSES & EXERCISES
+// ============================================================================
+
+model Courses {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  teacherId   String       @db.ObjectId
+  title       String
+  description String       @default("")
+  duration    Int
+  type        CourseType[] @default([])
+  bannerImage String       @default("")
+  shortVideo  String       @default("")
+  price       Float        @default(0)
+  status      String       @default("active")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  teacher           Teacher            @relation(fields: [teacherId], references: [id])
+  courseEnrollments CourseEnrollment[]
+  courseExercises   CourseExercises[]
+  CourseSchedule    CourseSchedule[]
+  GroupCourses      GroupCourses[]
+  Booking           Booking[]
+
+  @@index([teacherId])
+}
+
 model GroupCourses {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   groupId   String   @db.ObjectId
@@ -393,37 +479,6 @@ model GroupCourses {
   @@index([courseId])
 }
 
-model Courses {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  title       String
-  description String @default("")
-
-  duration    Int
-  type        CourseType[] @default([])
-
-  bannerImage String  @default("")
-  shortVideo  String  @default("")
-  price       Float   @default(0)
-
-  status      String  @default("active")
-
-  teacherId   String @db.ObjectId
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  teacher Teacher @relation(fields: [teacherId], references: [id])
-
-  courseEnrollments CourseEnrollment[]
-  courseExercises   CourseExercises[]
-
-  CourseSchedule CourseSchedule[]
-  GroupCourses   GroupCourses[]
-
-  @@index([teacherId])
-  Booking Booking[]
-}
 model CourseExercises {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   courseId   String   @db.ObjectId
@@ -439,62 +494,57 @@ model CourseExercises {
 }
 
 model Exercises {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  teacherId   String   @db.ObjectId
   name        String
-  description String @default("")
-  purpose     String @default("")
-  duration    Int    @default(0)
+  description String   @default("")
+  purpose     String   @default("")
+  duration    Int      @default(0)
   day         Int
+  level       String   @default("beginner")
+  type        String   @default("")
+  image       String   @default("")
+  videoType   String   @default("local") // youtube, vimeo, local
+  video       String   @default("")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  level       String @default("beginner")
-  type        String @default("")
-
-  image       String @default("")
-  videoType   String @default("local") // youtube, vimeo, local
-  video       String @default("")
-  status      String @default("active")
-
-  teacherId String @db.ObjectId
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  teacher Teacher @relation(fields: [teacherId], references: [id])
-
-  courseExercises   CourseExercises[]
+  teacher         Teacher           @relation(fields: [teacherId], references: [id])
+  courseExercises CourseExercises[]
 }
 
 model CourseEnrollment {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
   userId    String   @db.ObjectId
-  teacher   Teacher  @relation(fields: [teacherId], references: [id])
   teacherId String   @db.ObjectId
-  course    Courses  @relation(fields: [courseId], references: [id])
   courseId  String   @db.ObjectId
   rating    Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user    User      @relation(fields: [userId], references: [id])
+  teacher Teacher   @relation(fields: [teacherId], references: [id])
+  course  Courses   @relation(fields: [courseId], references: [id])
+  Booking Booking[]
+
   @@index([userId])
   @@index([teacherId])
   @@index([courseId])
-  Booking Booking[]
 }
 
 model Booking {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  courseId  String   @db.ObjectId
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  courseId   String   @db.ObjectId
   enrolledId String   @db.ObjectId
-  startTime DateTime
-  endTime   DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  startTime  DateTime
+  endTime    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
-  course Courses @relation(fields: [courseId], references: [id])
+  user     User             @relation(fields: [userId], references: [id])
+  course   Courses          @relation(fields: [courseId], references: [id])
   enrolled CourseEnrollment @relation(fields: [enrolledId], references: [id])
 
   @@index([userId])
@@ -514,41 +564,22 @@ model CourseSchedule {
   @@index([courseId])
 }
 
-model PromoBan {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  // userId      String   @db.ObjectId
-  title       String
-  description String
-  imageUlr    String
-
-  status      String   @default("active")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-}
+// ============================================================================
+// SUBSCRIPTIONS
+// ============================================================================
 
 model Subscription {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  startDate   DateTime
-  endDate     DateTime
-  tag         String   @default("free")
-  status      String   @default("active")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  startDate DateTime
+  endDate   DateTime
+  tag       String   @default("free")
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   User User[]
 }
-
-model SubscriptionHistory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  subscriptionPlanId String @db.ObjectId
-  SubscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
-}
-
 
 model SubscriptionPlan {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -565,21 +596,28 @@ model SubscriptionPlan {
   SubscriptionHistory SubscriptionHistory[]
 }
 
-model Notification {
+model SubscriptionHistory {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String   @db.ObjectId
+  subscriptionPlanId String   @db.ObjectId
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  SubscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
+}
+
+// ============================================================================
+// PROMOTIONS & PRODUCTS
+// ============================================================================
+
+model PromoBan {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
   title       String
-  body        String
-  token       String   @default("")
-  imageUrl    String   @default("")
-  type        String   @default("info")
-  isRead      Boolean  @default(false)
+  description String
+  imageUlr    String
+  status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  User User @relation(fields: [userId], references: [id])
-
-  @@index([userId])
 }
 
 model Product {
@@ -592,21 +630,21 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  ProductOrder ProductOrder[]
-
+  ProductOrder    ProductOrder[]
   PurchaseHistory PurchaseHistory[]
 }
-model ProductOrder {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  productId   String   @db.ObjectId
-  quantity    Int      @default(1)
-  totalPrice  Float    @default(0)
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  User User @relation(fields: [userId], references: [id])
+model ProductOrder {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  productId  String   @db.ObjectId
+  quantity   Int      @default(1)
+  totalPrice Float    @default(0)
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  User    User    @relation(fields: [userId], references: [id])
   Product Product @relation(fields: [productId], references: [id])
 
   @@index([userId])
@@ -614,49 +652,137 @@ model ProductOrder {
 }
 
 model PurchaseHistory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  productId   String   @db.ObjectId
-  quantity    Int      @default(1)
-  totalPrice  Float    @default(0)
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  productId    String   @db.ObjectId
+  quantity     Int      @default(1)
+  totalPrice   Float    @default(0)
   purchaseDate DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  User User @relation(fields: [userId], references: [id])
+  User    User    @relation(fields: [userId], references: [id])
   Product Product @relation(fields: [productId], references: [id])
 
   @@index([userId])
   @@index([productId])
 }
 
+// ============================================================================
+// PAYMENTS
+// ============================================================================
+
 model Payment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  amount      Float    @default(0)
-  invoiceId   String   @default("")
-  courseId    String   @default("")
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String        @db.ObjectId
+  amount      Float         @default(0)
+  invoiceId   String        @default("")
+  courseId    String        @default("")
   status      PaymentStatus @default(PENDING)
-  paymentDate DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  paymentDate DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   User User @relation(fields: [userId], references: [id])
+
   @@index([userId])
 }
 
 model QPayToken {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  paymentId        String    @default("")
-  accessToken      String  
+  paymentId        String   @default("")
+  accessToken      String
   refreshToken     String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
   expiresIn        Int
   refreshExpiresIn Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
 }
 
-enum PaymentStatus {
-  SUCCESS
-  PENDING
+// ============================================================================
+// CHALLENGES
+// ============================================================================
+
+model Challenge {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String          @default("")
+  imageUrl    String          @default("")
+  duration    Int             @default(0) // in days
+  point       Int             @default(0)
+  type        ChallengeType[] @default([])
+  status      String          @default("active")
+  goal        String          @default("")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  ChallengeInstruction ChallengeInstruction[]
+  ChallengeEnrollment  ChallengeEnrollment[]
+  ChallengePoint       ChallengePoint[]
+}
+
+model ChallengeInstruction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  challengeId String   @db.ObjectId
+  instruction String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Challenge Challenge @relation(fields: [challengeId], references: [id])
+
+  @@index([challengeId])
+}
+
+model ChallengePoint {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  challengeId  String   @db.ObjectId
+  pointsEarned Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  User      User      @relation(fields: [userId], references: [id])
+  Challenge Challenge @relation(fields: [challengeId], references: [id])
+
+  @@index([userId])
+  @@index([challengeId])
+}
+
+model ChallengeEnrollment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  challengeId String   @db.ObjectId
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("active")
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  User      User      @relation(fields: [userId], references: [id])
+  Challenge Challenge @relation(fields: [challengeId], references: [id])
+
+  @@index([userId])
+  @@index([challengeId])
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  title     String
+  body      String
+  token     String   @default("")
+  imageUrl  String   @default("")
+  type      String   @default("info")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
