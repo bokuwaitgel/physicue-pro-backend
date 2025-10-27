@@ -338,8 +338,8 @@ export class AuthService {
       //register
       const newUser = await this.prisma.user.create({
         data: {
-          firstName: 'GoogleUser',
-          lastName: 'GoogleUser',
+          firstName: googleUserDto.firstName,
+          lastName: googleUserDto.lastName,
           email: googleUserDto.idToken,
           firebaseId: googleUserDto.idToken,
           fcmToken: googleUserDto.fcmToken,
@@ -374,8 +374,8 @@ export class AuthService {
       //register
       const newUser = await this.prisma.user.create({
         data: {
-          firstName: 'AppleUser',
-          lastName: 'AppleUser',
+          firstName: appleUserDto.firstName,
+          lastName: appleUserDto.lastName,
           email: appleUserDto.identityToken,
           firebaseId: appleUserDto.identityToken,
           fcmToken: appleUserDto.fcmToken,

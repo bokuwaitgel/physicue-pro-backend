@@ -88,6 +88,10 @@ export class GoogleUserDto {
   @IsNotEmpty()
   accessToken: string;
   @IsNotEmpty()
+  firstName: string;
+  @IsNotEmpty()
+  lastName: string;
+  @IsNotEmpty()
   uuid: string;
   @ApiProperty()
   fcmToken: string
@@ -103,6 +107,10 @@ export class AppleUserDto {
   @IsNotEmpty()
   @ApiProperty()
   uuid: string;
+  @IsNotEmpty()
+  firstName: string;
+  @IsNotEmpty()
+  lastName: string;
   @ApiProperty()
   fcmToken: string
 }
