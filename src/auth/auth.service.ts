@@ -323,7 +323,7 @@ export class AuthService {
     }
   }
 
-  async GoogleLogin(googleUserDto: GoogleUserDto): Promise<any> {
+  async googleLogin(googleUserDto: GoogleUserDto): Promise<any> {
     // create google login if user does not exist then register
     const user = await this.prisma.user.findFirst({
       where: {
@@ -359,7 +359,7 @@ export class AuthService {
     
   }
   
-  async AppleLogin(appleUserDto: AppleUserDto): Promise<any> {
+  async appleLogin(appleUserDto: AppleUserDto): Promise<any> {
     // create apple login if user does not exist then register
     const user = await this.prisma.user.findFirst({
       where: {

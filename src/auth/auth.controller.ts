@@ -16,6 +16,8 @@ import {
     LoginUserDto,
     RefreshTokenDto,
     CreateUserDto,
+    GoogleUserDto,
+    AppleUserDto,
     ChangePasswordDto,
     ResetPasswordDto,
     verifyTokenDto,
@@ -53,6 +55,22 @@ export class AuthController {
     public async register(@Body() createUserDto: CreateUserDto): Promise<any> {
       const result = await this.authService.register(
         createUserDto,
+      );
+      return result;
+    }
+
+    @Post('google-login')
+    public async googleLogin(@Body() googleUserDto: GoogleUserDto): Promise<any> {
+      const result = await this.authService.googleLogin(
+        googleUserDto,
+      );
+      return result;
+    }
+
+    @Post('apple-login')
+    public async appleLogin(@Body() appleUserDto: AppleUserDto): Promise<any> {
+      const result = await this.authService.appleLogin(
+        appleUserDto,
       );
       return result;
     }
