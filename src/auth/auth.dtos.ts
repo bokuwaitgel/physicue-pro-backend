@@ -78,7 +78,31 @@ export class CreateUserDto {
     firebaseId: string;
     @ApiProperty()
     fcmToken: string
-    
 }
 
 
+export class GoogleUserDto {
+  @IsNotEmpty()
+  @ApiProperty()
+  idToken: string;
+  @IsNotEmpty()
+  accessToken: string;
+  @IsNotEmpty()
+  uuid: string;
+  @ApiProperty()
+  fcmToken: string
+}
+
+
+export class AppleUserDto {
+  @IsNotEmpty()
+  @ApiProperty()
+  identityToken: string;
+  @IsNotEmpty()
+  authorizationCode: string;
+  @IsNotEmpty()
+  @ApiProperty()
+  uuid: string;
+  @ApiProperty()
+  fcmToken: string
+}

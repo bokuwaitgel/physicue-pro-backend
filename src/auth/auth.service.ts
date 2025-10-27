@@ -1,12 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
-import { access, stat } from 'fs';
-import { retry } from 'rxjs';
-import {ConfigService} from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import jwt from 'jsonwebtoken';
-
 import { UsersService } from '../users/users.service';
 
 import {
@@ -15,6 +9,8 @@ import {
   ResetPasswordDto,
   CreateUserDto,
   verifyTokenDto,
+  GoogleUserDto,
+  AppleUserDto,
 } from './auth.dtos';
 import { JwtPayload } from './jwt.strategy';
 
@@ -136,8 +132,6 @@ export class AuthService {
         refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
       },
     });
-
-    console.log(loginUserDto)
 
     //check fcmToken
     if (loginUserDto.fcmToken && user.fcmToken !== loginUserDto.fcmToken) {
@@ -325,8 +319,77 @@ export class AuthService {
         refreshToken: tokenRefresh.refreshToken,
         refreshTokenExpiry: tokenRefresh.refreshTokenExpiry,
         userId: newUser.id,
-        
       }
     }
+  }
+
+  async GoogleLogin(googleUserDto: GoogleUserDto): Promise<any> {
+    // create google login if user does not exist then register
+    const user = await this.prisma.user.findFirst({
+      where: {
+        // find by firebaseId
+        email: googleUserDto.idToken,
+      },
+    });
+
+    if (!user) {
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(googleUserDto.uuid, salt);
+      //register
+      const newUser = await this.prisma.user.create({
+        data: {
+          firstName: 'GoogleUser',
+          lastName: 'GoogleUser',
+          email: googleUserDto.idToken,
+          firebaseId: googleUserDto.idToken,
+          fcmToken: googleUserDto.fcmToken,
+          password: hash,
+          salt: salt,
+        },
+      }); 
+    }
+
+    //login
+    return this.login({
+      email: googleUserDto.idToken,
+      password: googleUserDto.uuid,
+      fcmToken: googleUserDto.fcmToken
+    });
+
+    
+  }
+  
+  async AppleLogin(appleUserDto: AppleUserDto): Promise<any> {
+    // create apple login if user does not exist then register
+    const user = await this.prisma.user.findFirst({
+      where: {
+        // find by firebaseId
+        email: appleUserDto.identityToken,
+      },
+    });
+
+    if (!user) {
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(appleUserDto.uuid, salt);
+      //register
+      const newUser = await this.prisma.user.create({
+        data: {
+          firstName: 'AppleUser',
+          lastName: 'AppleUser',
+          email: appleUserDto.identityToken,
+          firebaseId: appleUserDto.identityToken,
+          fcmToken: appleUserDto.fcmToken,
+          password: hash,
+          salt: salt,
+        },
+      }); 
+    }
+
+    //login
+    return this.login({
+      email: appleUserDto.identityToken,
+      password: appleUserDto.uuid,
+      fcmToken: appleUserDto.fcmToken
+    });
   }
 }
