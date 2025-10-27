@@ -83,7 +83,7 @@ export class UsersController {
         return this.usersService.uploadProfileImage(id, file);
     }
 
-    @Post('termAccepted')
+    @Post('accept-terms')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     async termAccepted(@Headers('Authorization') auth: string) {
