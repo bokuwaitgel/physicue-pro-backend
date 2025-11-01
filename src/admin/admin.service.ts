@@ -337,6 +337,71 @@ export class AdminService {
             };
         }
 
+        // Delete all related records first to avoid foreign key violations
+
+        // Delete event-related data
+        const events = await this.prisma.event.findMany({
+            where: { groupId },
+            select: { id: true }
+        });
+        
+        for (const event of events) {
+            // Delete event likes and comments
+            await this.prisma.eventLike.deleteMany({
+                where: { eventId: event.id }
+            });
+            await this.prisma.eventComment.deleteMany({
+                where: { eventId: event.id }
+            });
+        }
+
+        // Delete events
+        await this.prisma.event.deleteMany({
+            where: { groupId }
+        });
+
+        // Delete post-related data
+        const posts = await this.prisma.post.findMany({
+            where: { groupId },
+            select: { id: true }
+        });
+
+        for (const post of posts) {
+            // Delete post likes and comments
+            await this.prisma.postLike.deleteMany({
+                where: { postId: post.id }
+            });
+            await this.prisma.postComment.deleteMany({
+                where: { postId: post.id }
+            });
+        }
+
+        // Delete posts
+        await this.prisma.post.deleteMany({
+            where: { groupId }
+        });
+
+        // Delete stories
+        await this.prisma.story.deleteMany({
+            where: { GroupId: groupId }
+        });
+
+        // Delete group courses
+        await this.prisma.groupCourses.deleteMany({
+            where: { groupId }
+        });
+
+        // Delete group activities
+        await this.prisma.groupActivities.deleteMany({
+            where: { groupId }
+        });
+
+        // Delete group members
+        await this.prisma.groupMembers.deleteMany({
+            where: { groupId }
+        });
+
+        // Finally, delete the group
         await this.prisma.group.delete({
             where: { id: groupId },
         });
@@ -488,10 +553,53 @@ export class AdminService {
                 message: 'Course not found',
                 code: HttpStatus.NOT_FOUND,
             };
-        }  
+        }
+
+        // Delete all related records first to avoid foreign key violations
+
+        // Get all course enrollments
+        const enrollments = await this.prisma.courseEnrollment.findMany({
+            where: { courseId },
+            select: { id: true }
+        });
+
+        // Delete bookings for each enrollment
+        for (const enrollment of enrollments) {
+            await this.prisma.booking.deleteMany({
+                where: { enrolledId: enrollment.id }
+            });
+        }
+
+        // Delete course enrollments
+        await this.prisma.courseEnrollment.deleteMany({
+            where: { courseId }
+        });
+
+        // Delete direct bookings (if any)
+        await this.prisma.booking.deleteMany({
+            where: { courseId }
+        });
+
+        // Delete course schedules
+        await this.prisma.courseSchedule.deleteMany({
+            where: { courseId }
+        });
+
+        // Delete group courses
+        await this.prisma.groupCourses.deleteMany({
+            where: { courseId }
+        });
+
+        // Delete course exercises
+        await this.prisma.courseExercises.deleteMany({
+            where: { courseId }
+        });
+
+        // Finally, delete the course
         await this.prisma.courses.delete({
             where: { id: courseId },
         });
+
         return {
             success: true,
             type: 'success',
@@ -616,6 +724,19 @@ export class AdminService {
             };
         }
 
+        // Delete all related records first to avoid foreign key violations
+
+        // Delete user exercise progress
+        await this.prisma.userExerciseProgress.deleteMany({
+            where: { exerciseId }
+        });
+
+        // Delete course exercises
+        await this.prisma.courseExercises.deleteMany({
+            where: { exerciseId }
+        });
+
+        // Finally, delete the exercise
         await this.prisma.exercises.delete({
             where: { id: exerciseId },
         });

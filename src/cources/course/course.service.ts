@@ -177,11 +177,53 @@ export class CourseService {
     });
     if(find)
     {
+      // Delete all related records first to avoid foreign key violations
+
+      // Get all course enrollments
+      const enrollments = await this.prisma.courseEnrollment.findMany({
+        where: { courseId: data.id },
+        select: { id: true }
+      });
+
+      // Delete bookings for each enrollment
+      for (const enrollment of enrollments) {
+        await this.prisma.booking.deleteMany({
+          where: { enrolledId: enrollment.id }
+        });
+      }
+
+      // Delete course enrollments
+      await this.prisma.courseEnrollment.deleteMany({
+        where: { courseId: data.id }
+      });
+
+      // Delete direct bookings (if any)
+      await this.prisma.booking.deleteMany({
+        where: { courseId: data.id }
+      });
+
+      // Delete course schedules
+      await this.prisma.courseSchedule.deleteMany({
+        where: { courseId: data.id }
+      });
+
+      // Delete group courses
+      await this.prisma.groupCourses.deleteMany({
+        where: { courseId: data.id }
+      });
+
+      // Delete course exercises
+      await this.prisma.courseExercises.deleteMany({
+        where: { courseId: data.id }
+      });
+
+      // Finally, delete the course
       await this.prisma.courses.delete({
         where: {
           id: data.id
         }
       });
+
       return {
         status: true,
         type: 'success',

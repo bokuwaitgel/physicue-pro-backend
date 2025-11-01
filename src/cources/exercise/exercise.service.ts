@@ -217,11 +217,26 @@ export class ExerciseService {
         code : HttpStatus.NOT_FOUND,
       }
     }
+
+    // Delete all related records first to avoid foreign key violations
+
+    // Delete user exercise progress
+    await this.prisma.userExerciseProgress.deleteMany({
+      where: { exerciseId: data.id }
+    });
+
+    // Delete course exercises
+    await this.prisma.courseExercises.deleteMany({
+      where: { exerciseId: data.id }
+    });
+
+    // Finally, delete the exercise
     const res = await this.prisma.exercises.delete({
       where: {
         id: data.id
       }
     });
+
     return {
       status: true,
       type: 'success',

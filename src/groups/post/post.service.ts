@@ -113,9 +113,23 @@ export class PostService {
     }
 
     async deletePost(id: string) {
+        // Delete all related records first to avoid foreign key violations
+        
+        // Delete post comments
+        await this.prisma.postComment.deleteMany({
+            where: { postId: id }
+        });
+
+        // Delete post likes
+        await this.prisma.postLike.deleteMany({
+            where: { postId: id }
+        });
+
+        // Finally, delete the post
         await this.prisma.post.delete({
             where: { id },
         });
+
         return {
             success: true,
             type: 'success',

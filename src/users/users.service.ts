@@ -256,6 +256,114 @@ export class UsersService {
          }
     }
 
+    // Delete all related records first to avoid foreign key violations
+    
+    // Delete user's notifications
+    await this.prisma.notification.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's challenge-related data
+    await this.prisma.challengePoint.deleteMany({
+      where: { userId }
+    });
+    await this.prisma.challengeEnrollment.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's payments
+    await this.prisma.payment.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's purchase history
+    await this.prisma.purchaseHistory.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's product orders
+    await this.prisma.productOrder.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's post interactions
+    await this.prisma.postComment.deleteMany({
+      where: { userId }
+    });
+    await this.prisma.postLike.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's event interactions
+    await this.prisma.eventComment.deleteMany({
+      where: { userId }
+    });
+    await this.prisma.eventLike.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's stories
+    await this.prisma.story.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's group memberships
+    await this.prisma.groupMembers.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's course enrollments and bookings
+    const enrollments = await this.prisma.courseEnrollment.findMany({
+      where: { userId },
+      select: { id: true }
+    });
+    for (const enrollment of enrollments) {
+      await this.prisma.booking.deleteMany({
+        where: { enrolledId: enrollment.id }
+      });
+    }
+    await this.prisma.booking.deleteMany({
+      where: { userId }
+    });
+    await this.prisma.courseEnrollment.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's exercise progress
+    await this.prisma.userExerciseProgress.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's streak counter
+    await this.prisma.userStreakCounter.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's calories
+    await this.prisma.userCalories.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's health tracking data
+    await this.prisma.caloriesHistory.deleteMany({
+      where: { userId }
+    });
+    await this.prisma.waterHistory.deleteMany({
+      where: { userId }
+    });
+    await this.prisma.sleepHistory.deleteMany({
+      where: { userId }
+    });
+    await this.prisma.bodyHistory.deleteMany({
+      where: { userId }
+    });
+
+    // Delete user's meal tracking
+    await this.prisma.userMealTrackerDaily.deleteMany({
+      where: { userId }
+    });
+
+    // Finally, delete the user
     const result = await this.prisma.user.delete({
       where: { 
         id: userId
