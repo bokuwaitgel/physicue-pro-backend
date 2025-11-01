@@ -363,6 +363,9 @@ export class CourseService {
       }
     })
 
+    //order by createdAt desc
+    result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
     return {
       status: true,
       type: 'success',
