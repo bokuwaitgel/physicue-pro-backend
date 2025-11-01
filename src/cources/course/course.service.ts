@@ -95,6 +95,9 @@ export class CourseService {
     const res = await this.prisma.courses.findMany({
       where: {
         teacherId: teacherId
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
@@ -104,6 +107,9 @@ export class CourseService {
         is_my_course: course.teacherId === teacherId
       }
     });
+
+    //order by createdAt desc
+    response.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     return {
       status: true,
       type: 'success',
