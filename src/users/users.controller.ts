@@ -83,6 +83,44 @@ export class UsersController {
         return this.usersService.uploadProfileImage(id, file);
     }
 
+    @Post('/uploads/teacher-asset')
+    @ApiConsumes('multipart/form-data')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadTeacherAsset(
+        @UploadedFile() file: Express.Multer.File,
+        @Headers('Authorization') auth: string
+    ) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.uploadTeacherAsset(decoded.data.id, file);
+    }
+
+    @Get('/uploads/teacher-asset')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async getTeacherUploads(@Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.getTeacherUploads(decoded.data.id);
+    }
+
+    @Delete('/uploads/teacher-asset/:uploadId')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async deleteTeacherUpload(@Param('uploadId') uploadId: string, @Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.usersService.deleteTeacherUpload(decoded.data.id, uploadId);
+    }
+
     @Post('accept-terms')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

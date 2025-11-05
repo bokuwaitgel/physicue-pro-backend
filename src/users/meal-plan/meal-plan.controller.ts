@@ -20,14 +20,16 @@ import { AuthService } from '../../auth/auth.service';
 import {
   CreateMealDto,
   UpdateMealDto,
-  CreateRecipeDto,
-  UpdateRecipeDto,
   TrackDailyMealDto,
   UpdateDailyMealDto,
   MealQueryDto,
   CreateCustomCalorieDto,
   UpdateCustomCalorieDto,
   CustomCalorieQueryDto,
+  CreateIngredientDto,
+  UpdateIngredientDto,
+  CreateMealPlanDto,
+  UpdateMealPlanDto,
 } from './meal-plan.dto';
 
 @ApiTags('meal-plan')
@@ -64,6 +66,18 @@ export class MealPlanController {
     return this.mealPlanService.getMeal(mealId);
   }
 
+  @Get('meals/created-by-me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get meals created by authenticated user' })
+  async getMyMeals(@Headers('Authorization') auth: string, @Query() query: MealQueryDto) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    return this.mealPlanService.getMealByCreatedBy(decoded.data.id);
+  }
+
   @Get('meals')
   @ApiOperation({ summary: 'Get all meals with optional filters' })
   @ApiResponse({ status: 200, description: 'Meals retrieved successfully' })
@@ -89,59 +103,6 @@ export class MealPlanController {
   @ApiResponse({ status: 404, description: 'Meal not found' })
   async deleteMeal(@Param('mealId') mealId: string) {
     return this.mealPlanService.deleteMeal(mealId);
-  }
-
-  // ============================================================================
-  // RECIPE ENDPOINTS
-  // ============================================================================
-
-  @Post('recipe')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new recipe' })
-  @ApiResponse({ status: 201, description: 'Recipe created successfully' })
-  async createRecipe(@Body() createRecipeDto: CreateRecipeDto) {
-    return this.mealPlanService.createRecipe(createRecipeDto);
-  }
-
-  @Get('recipe/:recipeId')
-  @ApiOperation({ summary: 'Get recipe by ID' })
-  @ApiResponse({ status: 200, description: 'Recipe retrieved successfully' })
-  @ApiResponse({ status: 404, description: 'Recipe not found' })
-  async getRecipe(@Param('recipeId') recipeId: string) {
-    return this.mealPlanService.getRecipe(recipeId);
-  }
-
-  @Get('recipes')
-  @ApiOperation({ summary: 'Get all recipes' })
-  @ApiResponse({ status: 200, description: 'Recipes retrieved successfully' })
-  async getRecipes(@Query('limit') limit?: number) {
-    return this.mealPlanService.getRecipes(limit);
-  }
-
-  @Put('recipe/:recipeId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a recipe' })
-  @ApiResponse({ status: 200, description: 'Recipe updated successfully' })
-  @ApiResponse({ status: 404, description: 'Recipe not found' })
-  async updateRecipe(
-    @Param('recipeId') recipeId: string,
-    @Body() updateRecipeDto: UpdateRecipeDto
-  ) {
-    return this.mealPlanService.updateRecipe(recipeId, updateRecipeDto);
-  }
-
-  @Delete('recipe/:recipeId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a recipe' })
-  @ApiResponse({ status: 200, description: 'Recipe deleted successfully' })
-  @ApiResponse({ status: 400, description: 'Recipe is used in meals' })
-  @ApiResponse({ status: 404, description: 'Recipe not found' })
-  async deleteRecipe(@Param('recipeId') recipeId: string) {
-    return this.mealPlanService.deleteRecipe(recipeId);
   }
 
   // ============================================================================
@@ -341,5 +302,127 @@ export class MealPlanController {
       return decoded;
     }
     return this.mealPlanService.deleteCustomCalorie(entryId, decoded.data.id);
+  }
+
+  // ============================================================================
+  // INGREDIENT ENDPOINTS
+  // ============================================================================
+
+  @Post('ingredient')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Add ingredient to a meal' })
+  @ApiResponse({ status: 201, description: 'Ingredient added successfully' })
+  @ApiResponse({ status: 404, description: 'Meal not found' })
+  async createIngredient(@Body() createIngredientDto: CreateIngredientDto, @Headers('Authorization') auth: string) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    return this.mealPlanService.createIngredient(createIngredientDto);
+  }
+
+  @Get('meal/:mealId/ingredients')
+  @ApiOperation({ summary: 'Get all ingredients for a meal' })
+  @ApiResponse({ status: 200, description: 'Ingredients retrieved successfully' })
+  async getMealIngredients(@Param('mealId') mealId: string) {
+    return this.mealPlanService.getMealIngredients(mealId);
+  }
+
+  @Put('ingredient/:ingredientId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update an ingredient' })
+  @ApiResponse({ status: 200, description: 'Ingredient updated successfully' })
+  @ApiResponse({ status: 404, description: 'Ingredient not found' })
+  async updateIngredient(
+    @Param('ingredientId') ingredientId: string,
+    @Body() updateIngredientDto: UpdateIngredientDto,
+    @Headers('Authorization') auth: string
+  ) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    return this.mealPlanService.updateIngredient(ingredientId, updateIngredientDto);
+  }
+
+  @Delete('ingredient/:ingredientId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete an ingredient' })
+  @ApiResponse({ status: 200, description: 'Ingredient deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Ingredient not found' })
+  async deleteIngredient(@Param('ingredientId') ingredientId: string, @Headers('Authorization') auth: string) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    return this.mealPlanService.deleteIngredient(ingredientId);
+  }
+
+  // ============================================================================
+  // MEAL PLAN ENDPOINTS (Course Meal Plans)
+  // ============================================================================
+
+  @Post('meal-plan')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a meal plan entry (assign meal to course day)' })
+  @ApiResponse({ status: 201, description: 'Meal plan created successfully' })
+  async createMealPlan(@Body() createMealPlanDto: CreateMealPlanDto, @Headers('Authorization') auth: string) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    return this.mealPlanService.createMealPlan(createMealPlanDto);
+  }
+
+  @Get('meal-plan/course/:courseId')
+  @ApiOperation({ summary: 'Get meal plan for a course' })
+  @ApiResponse({ status: 200, description: 'Meal plan retrieved successfully' })
+  async getCourseMealPlan(@Param('courseId') courseId: string) {
+    return this.mealPlanService.getCourseMealPlan(courseId);
+  }
+
+  @Get('meal-plan/course/:courseId/day/:day')
+  @ApiOperation({ summary: 'Get meals for a specific day in a course' })
+  @ApiResponse({ status: 200, description: 'Meals retrieved successfully' })
+  async getCourseDayMeals(@Param('courseId') courseId: string, @Param('day') day: string) {
+    return this.mealPlanService.getCourseDayMeals(courseId, parseInt(day));
+  }
+
+  @Put('meal-plan/:mealPlanId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a meal plan entry' })
+  @ApiResponse({ status: 200, description: 'Meal plan updated successfully' })
+  @ApiResponse({ status: 404, description: 'Meal plan not found' })
+  async updateMealPlan(
+    @Param('mealPlanId') mealPlanId: string,
+    @Body() updateMealPlanDto: UpdateMealPlanDto,
+    @Headers('Authorization') auth: string
+  ) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    return this.mealPlanService.updateMealPlan(mealPlanId, updateMealPlanDto);
+  }
+
+  @Delete('meal-plan/:mealPlanId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a meal plan entry' })
+  @ApiResponse({ status: 200, description: 'Meal plan deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Meal plan not found' })
+  async deleteMealPlan(@Param('mealPlanId') mealPlanId: string, @Headers('Authorization') auth: string) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    return this.mealPlanService.deleteMealPlan(mealPlanId);
   }
 }

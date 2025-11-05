@@ -191,4 +191,16 @@ export class GroupsController {
     ) {
         return this.groupsService.uploadBannerImage(id, file);
     }
+
+    @Delete('delete/:id')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    async deleteGroup(@Param('id') id: string, @Headers('Authorization') auth: string) {
+        const decoded = await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        const userId = decoded.data.id;
+        return this.groupsService.deleteGroup(id, userId);
+    }
 }

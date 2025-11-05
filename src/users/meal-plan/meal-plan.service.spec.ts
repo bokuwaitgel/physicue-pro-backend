@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MealPlanService } from './meal-plan.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MealType } from './meal-plan.dto';
 
 describe('MealPlanService', () => {
   let service: MealPlanService;
@@ -17,16 +18,19 @@ describe('MealPlanService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
-    recipe: {
+    ingredient: {
       create: jest.fn(),
-      findUnique: jest.fn(),
       findMany: jest.fn(),
+      findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
-    mealRecipe: {
+    mealPlan: {
+      create: jest.fn(),
       findMany: jest.fn(),
-      createMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
       deleteMany: jest.fn(),
     },
     userMealTrackerDaily: {
@@ -60,32 +64,48 @@ describe('MealPlanService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('createRecipe', () => {
-    it('should create a recipe successfully', async () => {
-      const createRecipeDto = {
-        recipe_name: 'Test Recipe',
-        recipe_description: 'Test Description',
-        calories: 350,
-        protein: 30,
-        carbs: 25,
-        fats: 12,
+  describe('createMeal', () => {
+    it('should create a meal successfully', async () => {
+      const createMealDto = {
+        name: 'Test Meal',
+        image: 'https://example.com/meal.jpg',
+        description: 'Test Description',
+        type: MealType.BREAKFAST,
       };
 
-      const mockRecipe = {
-        id: 'recipe123',
-        ...createRecipeDto,
+      const mockMeal = {
+        id: 'meal123',
+        ...createMealDto,
         createdAt: new Date(),
         updatedAt: new Date(),
+        Ingredient: [],
       };
 
-      mockPrismaService.recipe.create.mockResolvedValue(mockRecipe);
+      mockPrismaService.meal.create.mockResolvedValue(mockMeal);
 
-      const result = await service.createRecipe(createRecipeDto as any);
+      const result = await service.createMeal(createMealDto as any);
 
       expect(result.status).toBe(true);
-      expect(result.data).toEqual(mockRecipe);
-      expect(prisma.recipe.create).toHaveBeenCalledWith({
-        data: createRecipeDto,
+      expect(result.data).toEqual({
+        id: mockMeal.id,
+        name: mockMeal.name,
+        image: mockMeal.image,
+        description: mockMeal.description,
+        type: mockMeal.type,
+        createdAt: mockMeal.createdAt,
+        updatedAt: mockMeal.updatedAt,
+        Ingredient: [],
+      });
+      expect(prisma.meal.create).toHaveBeenCalledWith({
+        data: {
+          name: createMealDto.name,
+          image: createMealDto.image,
+          description: createMealDto.description,
+          type: createMealDto.type,
+        },
+        include: {
+          Ingredient: true,
+        },
       });
     });
   });

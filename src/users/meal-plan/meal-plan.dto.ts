@@ -13,43 +13,201 @@ export enum MealType {
 // ============================================================================
 
 export class CreateMealDto {
+  @ApiProperty({ description: 'Meal name', example: 'Grilled Chicken Salad' })
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: 'Meal image URL', example: 'https://example.com/meal.jpg' })
+  @IsNotEmpty()
+  @IsString()
+  image: string;
+
+  @ApiProperty({ description: 'Meal description', example: 'Healthy protein-rich salad' })
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+
   @ApiProperty({ description: 'Meal type', enum: MealType, example: MealType.BREAKFAST })
   @IsNotEmpty()
   @IsEnum(MealType)
-  mealType: MealType;
-
-  @ApiProperty({ description: 'Meal time', example: '2025-10-26T08:00:00Z' })
-  @IsNotEmpty()
-  @IsDateString()
-  mealTime: Date;
-
-  @ApiProperty({ description: 'Recipe IDs for this meal', type: [String], required: false })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  recipeIds?: string[];
+  type: MealType;
 }
 
 export class UpdateMealDto {
-  @ApiProperty({ description: 'Meal type', enum: MealType, required: false })
+  @ApiProperty({ description: 'Meal name', required: false })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiProperty({ description: 'Meal image URL', required: false })
+  @IsOptional()
+  @IsString()
+  image?: string;
+
+  @ApiProperty({ description: 'Meal description', required: false })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({ description: 'Meal type', required: false })
   @IsOptional()
   @IsEnum(MealType)
-  mealType?: MealType;
+  type?: MealType;
+}
 
-  @ApiProperty({ description: 'Meal time', required: false })
-  @IsOptional()
-  @IsDateString()
-  mealTime?: Date;
+export class MealResponseDto {
+  @ApiProperty()
+  id: string;
 
-  @ApiProperty({ description: 'Recipe IDs for this meal', type: [String], required: false })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  recipeIds?: string[];
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  image: string;
+
+  @ApiProperty()
+  description: string;
+
+  @ApiProperty()
+  type: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+
+  @ApiProperty({ type: [Object], required: false })
+  Ingredient?: any[];
 }
 
 // ============================================================================
-// RECIPE DTOs
+// INGREDIENT DTOs
+// ============================================================================
+
+export class CreateIngredientDto {
+  @ApiProperty({ description: 'Meal ID', example: '507f1f77bcf86cd799439011' })
+  @IsNotEmpty()
+  @IsString()
+  mealId: string;
+
+  @ApiProperty({ description: 'Ingredient name', example: 'Chicken breast' })
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: 'Ingredient image URL', example: 'https://example.com/chicken.jpg' })
+  @IsNotEmpty()
+  @IsString()
+  image: string;
+
+  @ApiProperty({ description: 'Quantity', example: '200g' })
+  @IsNotEmpty()
+  @IsString()
+  quantity: string;
+}
+
+export class UpdateIngredientDto {
+  @ApiProperty({ description: 'Ingredient name', required: false })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiProperty({ description: 'Ingredient image URL', required: false })
+  @IsOptional()
+  @IsString()
+  image?: string;
+
+  @ApiProperty({ description: 'Quantity', required: false })
+  @IsOptional()
+  @IsString()
+  quantity?: string;
+}
+
+export class IngredientResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  mealId: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  image: string;
+
+  @ApiProperty()
+  quantity: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+
+// ============================================================================
+// MEAL PLAN DTOs
+// ============================================================================
+
+export class CreateMealPlanDto {
+  @ApiProperty({ description: 'Course ID', example: '507f1f77bcf86cd799439011' })
+  @IsNotEmpty()
+  @IsString()
+  courseId: string;
+
+  @ApiProperty({ description: 'Day number', example: 1 })
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  day: number;
+
+  @ApiProperty({ description: 'Meal ID', example: '507f1f77bcf86cd799439011' })
+  @IsNotEmpty()
+  @IsString()
+  mealId: string;
+}
+
+export class UpdateMealPlanDto {
+  @ApiProperty({ description: 'Day number', required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  day?: number;
+
+  @ApiProperty({ description: 'Meal ID', required: false })
+  @IsOptional()
+  @IsString()
+  mealId?: string;
+}
+
+export class MealPlanResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  courseId: string;
+
+  @ApiProperty()
+  day: number;
+
+  @ApiProperty()
+  mealId: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+
+  @ApiProperty({ type: Object, required: false })
+  meal?: any;
+}
+
+// ============================================================================
+// LEGACY RECIPE DTOs (Keep for backward compatibility if needed)
 // ============================================================================
 
 export class CreateRecipeDto {
@@ -291,7 +449,7 @@ export class RecipeResponseDto {
   updatedAt: Date;
 }
 
-export class MealResponseDto {
+export class LegacyMealResponseDto {
   id: string;
   mealType: string;
   mealTime: Date;
@@ -312,7 +470,7 @@ export class DailyNutritionDto {
   protein: number;
   carbs: number;
   fats: number;
-  meals: MealResponseDto[];
+  meals: LegacyMealResponseDto[];
 }
 
 export class NutritionAnalyticsDto {
@@ -345,7 +503,7 @@ export class MealPlanDto {
   meals: {
     day: string;
     date: Date;
-    meals: MealResponseDto[];
+    meals: LegacyMealResponseDto[];
   }[];
 }
 

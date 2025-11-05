@@ -154,4 +154,18 @@ export class ExerciseController {
     return this.exerciseService.uploadExerciseVideo(id, file);
   }
 
+  @Delete('deleteCourseExercise/:exerciseId')
+  @ApiOperation({ summary: 'Delete exercise from course' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Data' })
+  public async deleteCourseExercise(@Param('exerciseId') exerciseId: string, @Headers('Authorization') auth: string) {
+    const decoded = await this.authService.verifyToken({token: auth});
+    if (decoded.code != 200) {
+        return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.exerciseService.deletebyUser(exerciseId, userId);
+  }
+
 }

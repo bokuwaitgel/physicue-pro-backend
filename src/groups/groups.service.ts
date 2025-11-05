@@ -1036,6 +1036,9 @@ export class GroupsService {
         }
 
         const groupMembers = await this.prisma.groupMembers.findMany({
+            where: {
+                groupId,
+            },
         })
 
         const groupCourses = await this.prisma.groupCourses.findMany({
@@ -1184,6 +1187,115 @@ export class GroupsService {
                 message: e.message,
                 code: HttpStatus.BAD_REQUEST,
             }
+        }
+    }
+
+    async deleteGroup(groupId: string, userId: string   ) {
+        //check if group exists
+        const group = await this.prisma.group.findUnique({
+            where: {
+                id: groupId,
+            },
+        });
+        if (!group) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Group not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        const teacher = await this.prisma.teacher.findUnique({
+            where: {
+                id: group.adminId,
+            },
+        });
+        if (!teacher) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Teacher not found',
+                code: HttpStatus.NOT_FOUND,
+            }
+        }
+
+        //check if user is admin of the group
+        
+        if (group.adminId !== teacher.id) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'You are not authorized to delete this group',
+                code: HttpStatus.UNAUTHORIZED,
+            }
+        }
+
+        // delete related group members
+        await this.prisma.groupMembers.deleteMany({
+            where: { groupId: groupId },
+        });
+        
+        // delete related group courses
+        await this.prisma.groupCourses.deleteMany({
+            where: { groupId: groupId },
+        });
+        // delete related events
+        await this.prisma.event.deleteMany({
+            where: { groupId: groupId },
+        });
+        // delete related activities
+        await this.prisma.groupActivities.deleteMany({
+            where: { groupId: groupId },
+        });
+        // delete related posts
+        await this.prisma.post.deleteMany({
+            where: { groupId: groupId },
+        }); 
+
+        // delete related group courses
+        await this.prisma.groupCourses.deleteMany({
+            where: { groupId: groupId },
+        });
+        // delete related events
+        await this.prisma.event.deleteMany({
+            where: { groupId: groupId },
+        });
+        // delete related activities
+        await this.prisma.groupActivities.deleteMany({
+            where: { groupId: groupId },
+        });
+        // delete related posts
+        await this.prisma.post.deleteMany({
+            where: { groupId: groupId },
+        });
+
+        // delete like comments
+        await this.prisma.postLike.deleteMany({
+            where: {
+                post: {
+                    groupId: groupId,
+                }
+            },
+        });
+        await this.prisma.postComment.deleteMany({
+            where: {
+                post: {
+                    groupId: groupId,
+                }
+            },
+        });
+
+        // delete group
+        await this.prisma.group.delete({
+            where: { id: groupId },
+        });
+
+        return {
+            success: true,
+            type: 'success',
+            message: 'Group deleted successfully',
+            code: HttpStatus.OK,
         }
     }
 

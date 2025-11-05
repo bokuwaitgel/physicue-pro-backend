@@ -16,7 +16,6 @@ export class CreateExerciseDto {
   type : string; // strength, cardio, flexibility
   @IsNotEmpty()
   courseId: string;
-
   @ApiProperty()
   videoType: string = 'local'; // local, youtube, vimeo
 

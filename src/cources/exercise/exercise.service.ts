@@ -10,6 +10,7 @@ import {
   getExerciseByIdDto,
   addExerciseToCourseDto
 } from './exercise.dto';
+import e from 'express';
 
 @Injectable()
 export class ExerciseService {
@@ -502,6 +503,52 @@ export class ExerciseService {
         }
       }
     }
+  }
+
+  async deletebyUser(exerciseId: string, userId: string) : Promise<unknown> {
+    if(!exerciseId || !userId) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Course id and user id are required',
+        code : HttpStatus.BAD_REQUEST,
+      }
+    }
+
+    const exercise = await this.prisma.exercises.findUnique({
+      where: {
+        id: exerciseId
+      }
+    });
+
+    if(!exercise) {
+      return {
+        status: false,
+        type: 'failed',
+        message: 'Exercise not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+
+
+
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        id: exercise.teacherId,
+        userId: userId
+      }
+    });
+
+    if(!teacher){
+      return {
+        status: false,
+        type: 'error',
+        message: 'You are not authorized to delete this course',
+        code : HttpStatus.UNAUTHORIZED,
+      }
+    }
+    return await this.deleteExercise({id: exerciseId});
+
   }
 
 }

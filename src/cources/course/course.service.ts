@@ -184,6 +184,11 @@ export class CourseService {
     if(find)
     {
       // Delete all related records first to avoid foreign key violations
+      await this.prisma.courseExercises.deleteMany({
+        where: { courseId: data.id }
+      });
+
+
 
       // Get all course enrollments
       const enrollments = await this.prisma.courseEnrollment.findMany({
@@ -247,6 +252,43 @@ export class CourseService {
       }
     }
   }
+
+
+  async deletebyUser(courseId: string, userId: string) : Promise<unknown> {
+    const course = await this.prisma.courses.findUnique({
+      where: {
+        id: courseId
+      }
+    });
+
+    if(!course){
+      return {
+        status: false,
+        type: 'error',
+        message: 'Course not found',
+        code : HttpStatus.NOT_FOUND,
+      }
+    }
+
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        id: course.teacherId,
+        userId: userId
+      }
+    });
+
+    if(!teacher){
+      return {
+        status: false,
+        type: 'error',
+        message: 'You are not authorized to delete this course',
+        code : HttpStatus.UNAUTHORIZED,
+      }
+    }
+
+    return this.deleteCourse({id: courseId});
+  }
+
 
   async getCourseDetails(courseId: string, userId: string) : Promise<unknown> {
     const res = await this.prisma.courses.findFirst({
@@ -315,6 +357,52 @@ export class CourseService {
       });
     }
 
+    // meal plan list
+    const mealPlans = await this.prisma.mealPlan.findMany({
+      where: {
+        courseId: courseId
+      },
+      include: {
+        meal: {
+          include: {
+            Ingredient: true
+          }
+        }
+      },
+      orderBy: {
+        day: 'asc'
+      }
+    });
+
+    const formattedMealPlans = mealPlans.map((plan) => ({
+      id: plan.id,
+      courseId: plan.courseId,
+      day: plan.day,
+      mealId: plan.mealId,
+      createdAt: plan.createdAt,
+      updatedAt: plan.updatedAt,
+      meal: plan.meal
+        ? {
+            id: plan.meal.id,
+            name: plan.meal.name,
+            image: plan.meal.image,
+            description: plan.meal.description,
+            type: plan.meal.type,
+            createdAt: plan.meal.createdAt,
+            updatedAt: plan.meal.updatedAt,
+            Ingredient: plan.meal.Ingredient?.map((ingredient) => ({
+              id: ingredient.id,
+              mealId: ingredient.mealId,
+              name: ingredient.name,
+              image: ingredient.image,
+              quantity: ingredient.quantity,
+              createdAt: ingredient.createdAt,
+              updatedAt: ingredient.updatedAt,
+            })) || [],
+          }
+        : null,
+    }));
+
     return {
       status: true,
       type: 'success',
@@ -325,7 +413,8 @@ export class CourseService {
         enrolled: !!enrolled,
         is_my_course: teacher?.id === res?.teacherId,
         exercises: mapped_exercises,
-        booking: booking ? booking : null
+        booking: booking ? booking : null,
+        mealPlans: formattedMealPlans
       }
     }
   }

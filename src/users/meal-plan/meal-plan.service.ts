@@ -3,20 +3,22 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   CreateMealDto,
   UpdateMealDto,
-  CreateRecipeDto,
-  UpdateRecipeDto,
+  MealQueryDto,
+  MealResponseDto,
   TrackDailyMealDto,
   UpdateDailyMealDto,
-  MealQueryDto,
-  RecipeResponseDto,
-  MealResponseDto,
-  DailyNutritionDto,
   NutritionAnalyticsDto,
   CreateCustomCalorieDto,
   UpdateCustomCalorieDto,
   CustomCalorieQueryDto,
   CustomCalorieResponseDto,
   DailyCustomCalorieSummaryDto,
+  CreateIngredientDto,
+  UpdateIngredientDto,
+  IngredientResponseDto,
+  CreateMealPlanDto,
+  UpdateMealPlanDto,
+  MealPlanResponseDto,
 } from './meal-plan.dto';
 
 @Injectable()
@@ -27,26 +29,17 @@ export class MealPlanService {
   // MEAL CRUD OPERATIONS
   // ============================================================================
 
-  async createMeal(createMealDto: CreateMealDto, userId?: string) {
-    const { recipeIds, ...mealData } = createMealDto;
-
+  async createMeal(createMealDto: CreateMealDto, _userId?: string) {
     const meal = await this.prisma.meal.create({
       data: {
-        ...mealData,
-        mealRecipes: recipeIds
-          ? {
-              create: recipeIds.map((recipeId) => ({
-                recipe: { connect: { id: recipeId } },
-              })),
-            }
-          : undefined,
+        createdBy: _userId || 'auto',
+        name: createMealDto.name,
+        image: createMealDto.image,
+        description: createMealDto.description,
+        type: createMealDto.type,
       },
       include: {
-        mealRecipes: {
-          include: {
-            recipe: true,
-          },
-        },
+        Ingredient: true,
       },
     });
 
@@ -59,15 +52,27 @@ export class MealPlanService {
     };
   }
 
+  async getMealByCreatedBy(userId: string) {
+    const meals = await this.prisma.meal.findMany({
+      where: { createdBy: userId },
+      include: {
+        Ingredient: true,
+      },
+    });
+
+    return {
+      status: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      data: meals.map((meal) => this.formatMealResponse(meal)),
+    };
+  }
+
   async getMeal(mealId: string) {
     const meal = await this.prisma.meal.findUnique({
       where: { id: mealId },
       include: {
-        mealRecipes: {
-          include: {
-            recipe: true,
-          },
-        },
+        Ingredient: true,
       },
     });
 
@@ -87,29 +92,25 @@ export class MealPlanService {
     const where: any = {};
 
     if (query?.mealType) {
-      where.mealType = query.mealType;
+      where.type = query.mealType;
     }
 
     if (query?.startDate || query?.endDate) {
-      where.mealTime = {};
+      where.createdAt = {};
       if (query.startDate) {
-        where.mealTime.gte = new Date(query.startDate);
+        where.createdAt.gte = new Date(query.startDate);
       }
       if (query.endDate) {
-        where.mealTime.lte = new Date(query.endDate);
+        where.createdAt.lte = new Date(query.endDate);
       }
     }
 
     const meals = await this.prisma.meal.findMany({
       where,
       include: {
-        mealRecipes: {
-          include: {
-            recipe: true,
-          },
-        },
+        Ingredient: true,
       },
-      orderBy: { mealTime: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: query?.limit || 50,
     });
 
@@ -130,33 +131,13 @@ export class MealPlanService {
       throw new NotFoundException('Meal not found');
     }
 
-    const { recipeIds, ...mealData } = updateMealDto;
-
-    // If recipeIds are provided, update the meal recipes
-    if (recipeIds) {
-      // Delete existing meal recipes
-      await this.prisma.mealRecipe.deleteMany({
-        where: { mealId },
-      });
-
-      // Create new meal recipes
-      await this.prisma.mealRecipe.createMany({
-        data: recipeIds.map((recipeId) => ({
-          mealId,
-          recipeId,
-        })),
-      });
-    }
-
     const updatedMeal = await this.prisma.meal.update({
       where: { id: mealId },
-      data: mealData,
+      data: {
+        ...updateMealDto,
+      },
       include: {
-        mealRecipes: {
-          include: {
-            recipe: true,
-          },
-        },
+        Ingredient: true,
       },
     });
 
@@ -178,12 +159,14 @@ export class MealPlanService {
       throw new NotFoundException('Meal not found');
     }
 
-    // Delete meal recipes first
-    await this.prisma.mealRecipe.deleteMany({
+    await this.prisma.ingredient.deleteMany({
       where: { mealId },
     });
 
-    // Delete meal
+    await this.prisma.mealPlan.deleteMany({
+      where: { mealId },
+    });
+
     await this.prisma.meal.delete({
       where: { id: mealId },
     });
@@ -192,108 +175,6 @@ export class MealPlanService {
       status: true,
       type: 'success',
       message: 'Meal deleted successfully',
-      code: HttpStatus.OK,
-    };
-  }
-
-  // ============================================================================
-  // RECIPE CRUD OPERATIONS
-  // ============================================================================
-
-  async createRecipe(createRecipeDto: CreateRecipeDto) {
-    const recipe = await this.prisma.recipe.create({
-      data: createRecipeDto,
-    });
-
-    return {
-      status: true,
-      type: 'success',
-      message: 'Recipe created successfully',
-      code: HttpStatus.CREATED,
-      data: recipe,
-    };
-  }
-
-  async getRecipe(recipeId: string) {
-    const recipe = await this.prisma.recipe.findUnique({
-      where: { id: recipeId },
-    });
-
-    if (!recipe) {
-      throw new NotFoundException('Recipe not found');
-    }
-
-    return {
-      status: true,
-      type: 'success',
-      code: HttpStatus.OK,
-      data: recipe,
-    };
-  }
-
-  async getRecipes(limit: number = 50) {
-    const recipes = await this.prisma.recipe.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
-
-    return {
-      status: true,
-      type: 'success',
-      code: HttpStatus.OK,
-      data: recipes,
-    };
-  }
-
-  async updateRecipe(recipeId: string, updateRecipeDto: UpdateRecipeDto) {
-    const recipe = await this.prisma.recipe.findUnique({
-      where: { id: recipeId },
-    });
-
-    if (!recipe) {
-      throw new NotFoundException('Recipe not found');
-    }
-
-    const updatedRecipe = await this.prisma.recipe.update({
-      where: { id: recipeId },
-      data: updateRecipeDto,
-    });
-
-    return {
-      status: true,
-      type: 'success',
-      message: 'Recipe updated successfully',
-      code: HttpStatus.OK,
-      data: updatedRecipe,
-    };
-  }
-
-  async deleteRecipe(recipeId: string) {
-    const recipe = await this.prisma.recipe.findUnique({
-      where: { id: recipeId },
-    });
-
-    if (!recipe) {
-      throw new NotFoundException('Recipe not found');
-    }
-
-    // Check if recipe is used in any meals
-    const mealRecipes = await this.prisma.mealRecipe.findMany({
-      where: { recipeId },
-    });
-
-    if (mealRecipes.length > 0) {
-      throw new BadRequestException('Cannot delete recipe that is used in meals');
-    }
-
-    await this.prisma.recipe.delete({
-      where: { id: recipeId },
-    });
-
-    return {
-      status: true,
-      type: 'success',
-      message: 'Recipe deleted successfully',
       code: HttpStatus.OK,
     };
   }
@@ -608,25 +489,41 @@ export class MealPlanService {
   // ============================================================================
 
   private formatMealResponse(meal: any): MealResponseDto {
-    const recipes = meal.mealRecipes?.map((mr) => mr.recipe) || [];
-    const totalNutrition = recipes.reduce(
-      (acc, recipe) => ({
-        calories: acc.calories + (recipe.calories || 0),
-        protein: acc.protein + (recipe.protein || 0),
-        carbs: acc.carbs + (recipe.carbs || 0),
-        fats: acc.fats + (recipe.fats || 0),
-      }),
-      { calories: 0, protein: 0, carbs: 0, fats: 0 }
-    );
-
     return {
       id: meal.id,
-      mealType: meal.mealType,
-      mealTime: meal.mealTime,
-      recipes,
-      totalNutrition,
+      name: meal.name,
+      image: meal.image,
+      description: meal.description,
+      type: meal.type,
       createdAt: meal.createdAt,
       updatedAt: meal.updatedAt,
+      Ingredient: meal.Ingredient
+        ? meal.Ingredient.map((ingredient) => this.formatIngredientResponse(ingredient))
+        : [],
+    };
+  }
+
+  private formatIngredientResponse(ingredient: any): IngredientResponseDto {
+    return {
+      id: ingredient.id,
+      mealId: ingredient.mealId,
+      name: ingredient.name,
+      image: ingredient.image,
+      quantity: ingredient.quantity,
+      createdAt: ingredient.createdAt,
+      updatedAt: ingredient.updatedAt,
+    };
+  }
+
+  private formatMealPlanResponse(mealPlan: any): MealPlanResponseDto {
+    return {
+      id: mealPlan.id,
+      courseId: mealPlan.courseId,
+      day: mealPlan.day,
+      mealId: mealPlan.mealId,
+      createdAt: mealPlan.createdAt,
+      updatedAt: mealPlan.updatedAt,
+      meal: mealPlan.meal ? this.formatMealResponse(mealPlan.meal) : undefined,
     };
   }
 
@@ -1081,5 +978,249 @@ export class MealPlanService {
       entriesCount: day.count,
       entries: day.entries,
     }));
+  }
+
+  // ============================================================================
+  // INGREDIENT OPERATIONS
+  // ============================================================================
+
+  async createIngredient(createIngredientDto: CreateIngredientDto) {
+    const meal = await this.prisma.meal.findUnique({
+      where: { id: createIngredientDto.mealId },
+    });
+
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
+    }
+
+    const ingredient = await this.prisma.ingredient.create({
+      data: {
+        mealId: createIngredientDto.mealId,
+        name: createIngredientDto.name,
+        image: createIngredientDto.image,
+        quantity: createIngredientDto.quantity,
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.CREATED,
+      message: 'Ingredient created successfully',
+      data: this.formatIngredientResponse(ingredient),
+    };
+  }
+
+  async getMealIngredients(mealId: string) {
+    const meal = await this.prisma.meal.findUnique({
+      where: { id: mealId },
+    });
+
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
+    }
+
+    const ingredients = await this.prisma.ingredient.findMany({
+      where: { mealId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      data: ingredients.map((ingredient) => this.formatIngredientResponse(ingredient)),
+    };
+  }
+
+  async updateIngredient(ingredientId: string, updateIngredientDto: UpdateIngredientDto) {
+    const ingredient = await this.prisma.ingredient.findUnique({
+      where: { id: ingredientId },
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException('Ingredient not found');
+    }
+
+    const updated = await this.prisma.ingredient.update({
+      where: { id: ingredientId },
+      data: {
+        ...updateIngredientDto,
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      message: 'Ingredient updated successfully',
+      data: this.formatIngredientResponse(updated),
+    };
+  }
+
+  async deleteIngredient(ingredientId: string) {
+    const ingredient = await this.prisma.ingredient.findUnique({
+      where: { id: ingredientId },
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException('Ingredient not found');
+    }
+
+    await this.prisma.ingredient.delete({
+      where: { id: ingredientId },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      message: 'Ingredient deleted successfully',
+    };
+  }
+
+  // ============================================================================
+  // MEAL PLAN OPERATIONS (Course Meal Plans)
+  // ============================================================================
+
+  async createMealPlan(createMealPlanDto: CreateMealPlanDto) {
+    const meal = await this.prisma.meal.findUnique({
+      where: { id: createMealPlanDto.mealId },
+      include: { Ingredient: true },
+    });
+
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
+    }
+
+    const mealPlan = await this.prisma.mealPlan.create({
+      data: {
+        courseId: createMealPlanDto.courseId,
+        day: createMealPlanDto.day,
+        mealId: createMealPlanDto.mealId,
+      },
+      include: {
+        meal: {
+          include: {
+            Ingredient: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.CREATED,
+      message: 'Meal plan created successfully',
+      data: this.formatMealPlanResponse(mealPlan),
+    };
+  }
+
+  async getCourseMealPlan(courseId: string) {
+    const mealPlans = await this.prisma.mealPlan.findMany({
+      where: { courseId },
+      include: {
+        meal: {
+          include: {
+            Ingredient: true,
+          },
+        },
+      },
+      orderBy: { day: 'asc' },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      data: mealPlans.map((plan) => this.formatMealPlanResponse(plan)),
+    };
+  }
+
+  async getCourseDayMeals(courseId: string, day: number) {
+    const mealPlans = await this.prisma.mealPlan.findMany({
+      where: {
+        courseId,
+        day,
+      },
+      include: {
+        meal: {
+          include: {
+            Ingredient: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      data: mealPlans.map((plan) => this.formatMealPlanResponse(plan)),
+    };
+  }
+
+  async updateMealPlan(mealPlanId: string, updateMealPlanDto: UpdateMealPlanDto) {
+    const mealPlan = await this.prisma.mealPlan.findUnique({
+      where: { id: mealPlanId },
+    });
+
+    if (!mealPlan) {
+      throw new NotFoundException('Meal plan not found');
+    }
+
+    if (updateMealPlanDto.mealId) {
+      const meal = await this.prisma.meal.findUnique({
+        where: { id: updateMealPlanDto.mealId },
+      });
+
+      if (!meal) {
+        throw new NotFoundException('Meal not found');
+      }
+    }
+
+    const updated = await this.prisma.mealPlan.update({
+      where: { id: mealPlanId },
+      data: {
+        ...updateMealPlanDto,
+      },
+      include: {
+        meal: {
+          include: {
+            Ingredient: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      message: 'Meal plan updated successfully',
+      data: this.formatMealPlanResponse(updated),
+    };
+  }
+
+  async deleteMealPlan(mealPlanId: string) {
+    const mealPlan = await this.prisma.mealPlan.findUnique({
+      where: { id: mealPlanId },
+    });
+
+    if (!mealPlan) {
+      throw new NotFoundException('Meal plan not found');
+    }
+
+    await this.prisma.mealPlan.delete({
+      where: { id: mealPlanId },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      message: 'Meal plan deleted successfully',
+    };
   }
 }

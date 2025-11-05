@@ -11,6 +11,16 @@ export class EventService {
     //create event
     async createEvent(createEventDto: CreateEventDto, creater: string) {
         const { groupId, ...eventData } = createEventDto;
+
+        if (!groupId) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Group ID is required',
+                code: HttpStatus.BAD_REQUEST,
+            }
+        }
+
         const event = await this.prisma.event.create({
             data: {
                 title: eventData.title,

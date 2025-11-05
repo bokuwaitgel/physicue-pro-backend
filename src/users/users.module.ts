@@ -3,8 +3,6 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { BodyController } from './body/body.controller';
 import { BodyService } from './body/body.service';
-import { FoodController } from './food/food.controller';
-import { FoodService } from './food/food.service';
 import { SleepController } from './sleep/sleep.controller';
 import { SleepService } from './sleep/sleep.service';
 import { WaterController } from './water/water.controller';
@@ -20,7 +18,7 @@ import { JwtStrategy } from 'src/auth/jwt.strategy';
 
 @Module({
   imports: [AuthModule, MealPlanModule, StreakCounterModule],
-  controllers: [UsersController, BodyController, FoodController, SleepController, WaterController, AuthController],
-  providers: [UsersService, BodyService, FoodService, SleepService, WaterService, AuthService, JwtService, JwtStrategy],
+  controllers: [UsersController, BodyController, SleepController, WaterController, AuthController],
+  providers: [UsersService, BodyService, SleepService, WaterService, AuthService, JwtService, JwtStrategy],
 })
 export class UsersModule {}

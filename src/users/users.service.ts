@@ -753,6 +753,154 @@ export class UsersService {
     }
   }
 
+  async uploadTeacherAsset(userId: string, file: Express.Multer.File) {
+    if (!file) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'File is required',
+        code: HttpStatus.BAD_REQUEST,
+      };
+    }
+
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        userId,
+      },
+    });
+
+    if (!teacher) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Teacher profile not found',
+        code: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    const s3 = new AwsS3Service();
+
+    try {
+      const uploadResult = await s3.uploadTeacherFile(file, teacher.id);
+
+      const record = await this.prisma.teacherUploads.create({
+        data: {
+          teacherId: teacher.id,
+          fileUrl: uploadResult.location,
+          fileType: file.mimetype || 'application/octet-stream',
+        },
+      });
+
+      return {
+        success: true,
+        type: 'success',
+        message: 'Teacher file uploaded',
+        data: record,
+        code: HttpStatus.OK,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Error uploading file',
+        error,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+  }
+
+  async getTeacherUploads(userId: string) {
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        userId,
+      },
+    });
+
+    if (!teacher) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Teacher profile not found',
+        code: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    const uploads = await this.prisma.teacherUploads.findMany({
+      where: {
+        teacherId: teacher.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return {
+      success: true,
+      type: 'success',
+      message: 'Teacher uploads fetched',
+      data: uploads,
+      code: HttpStatus.OK,
+    };
+  }
+
+  async deleteTeacherUpload(userId: string, uploadId: string) {
+    const teacher = await this.prisma.teacher.findFirst({
+      where: {
+        userId,
+      },
+    });
+
+    if (!teacher) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Teacher profile not found',
+        code: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    const upload = await this.prisma.teacherUploads.findUnique({
+      where: {
+        id: uploadId,
+      },
+    });
+
+    if (!upload || upload.teacherId !== teacher.id) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Upload not found',
+        code: HttpStatus.NOT_FOUND,
+      };
+    }
+
+    const s3 = new AwsS3Service();
+
+    try {
+      await s3.deleteFileByUrl(upload.fileUrl);
+      await this.prisma.teacherUploads.delete({
+        where: {
+          id: uploadId,
+        },
+      });
+
+      return {
+        success: true,
+        type: 'success',
+        message: 'Teacher file deleted',
+        code: HttpStatus.OK,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        type: 'failed',
+        message: 'Error deleting file',
+        error,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+  }
+
   // upload profile image to s3 bucket
   async uploadProfileImage(userId: string, data: any) {
     const s3 = new AwsS3Service();

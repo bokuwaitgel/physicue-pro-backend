@@ -158,7 +158,20 @@ model Teacher {
   Group            Group[]
   CourseEnrollment CourseEnrollment[]
   Post             Post[]
+  teacherUploads   teacherUploads[]
 }
+
+model teacherUploads {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  teacherId String   @db.ObjectId
+  fileUrl   String
+  fileType  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Teacher Teacher @relation(fields: [teacherId], references: [id])
+}
+
 
 // ============================================================================
 // HEALTH TRACKING
@@ -233,36 +246,46 @@ model UserMealTrackerDaily {
   @@index([userId])
 }
 
-model Meal {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  mealType String
-  mealTime DateTime
+model MealPlan {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId  String   @db.ObjectId
+  day       Int
+  mealId    String   @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  mealRecipes MealRecipe[]
+  meal Meal @relation(fields: [mealId], references: [id])
+
+  @@index([courseId])
+  @@index([mealId])
 }
 
-model Recipe {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  recipe_name        String
-  recipe_description String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+model Meal {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdBy   String   @default("auto")
+  name        String
+  image       String
+  description String
+  type        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  mealRecipes MealRecipe[]
+  Ingredient Ingredient[]
+  MealPlan   MealPlan[]
 }
 
-model MealRecipe {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  mealId   String @db.ObjectId
-  recipeId String @db.ObjectId
+model Ingredient {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  mealId    String   @db.ObjectId
+  name      String
+  image     String
+  quantity  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  meal   Meal   @relation(fields: [mealId], references: [id])
-  recipe Recipe @relation(fields: [recipeId], references: [id])
+  meal Meal @relation(fields: [mealId], references: [id])
 
   @@index([mealId])
-  @@index([recipeId])
 }
 
 // ============================================================================
@@ -506,6 +529,7 @@ model Exercises {
   level       String   @default("beginner")
   type        String   @default("")
   image       String   @default("")
+  videoUrl    String   @default("") 
   videoType   String   @default("local") // youtube, vimeo, local
   video       String   @default("")
   calories    Float    @default(0)
