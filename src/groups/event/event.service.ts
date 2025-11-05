@@ -148,5 +148,25 @@ export class EventService {
         }
     }
 
+    // delete event
+    async deleteEvent(id: string) {
+        // delete likes
+        await this.prisma.eventLike.deleteMany({
+            where: { eventId: id },
+        });
+
+        // delete event
+        await this.prisma.event.delete({
+            where: { id },
+        });
+
+        return {
+            success: true,
+            type: 'success',
+            message: 'Event deleted successfully',
+            code: HttpStatus.OK,
+        }
+    }
+
 
 }

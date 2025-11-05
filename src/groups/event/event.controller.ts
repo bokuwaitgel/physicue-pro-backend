@@ -79,6 +79,19 @@ export class EventController {
         return this.eventService.likeEvent(data, userId);
     }
 
+    @Delete('del/:eventId')
+    @ApiOperation({ summary: 'Delete event' })
+    @ApiResponse({ status: 200, description: 'Data' })
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    public async deleteEvent(@Param('eventId') eventId: string, @Headers('Authorization') auth: string) {
+        const decoded =await this.authService.verifyToken({token: auth});
+        if (decoded.code != 200) {
+            return decoded;
+        }
+        return this.eventService.deleteEvent(eventId);
+    }
+
    
 
 

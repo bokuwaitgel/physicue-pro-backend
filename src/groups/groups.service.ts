@@ -1069,7 +1069,8 @@ export class GroupsService {
             where: {
                 id: {
                     in: courseIds,
-                }
+                },
+                
             },
         });
 
@@ -1095,6 +1096,30 @@ export class GroupsService {
             },
         });
 
+        // check user is member of the course
+        const userEnrolled = await this.prisma.courseEnrollment.findMany({
+            where: {
+                userId: userId
+            }
+        });
+
+        const is_teacher = await this.prisma.teacher.findFirst({
+            where: {
+                userId: userId
+            }
+        }); 
+
+        const course_data = groupCoursesData.map(course => {
+            const is_my_course = is_teacher && is_teacher.id === course.teacherId;
+            const is_enrolled = userEnrolled.some(enroll => enroll.courseId === course.id);
+            return {
+                ...course,
+                is_my_course: is_my_course,
+                enrolled: is_my_course || is_enrolled,
+            }
+        });
+        
+
         return {
             success: true,
             type: 'success',
@@ -1110,7 +1135,7 @@ export class GroupsService {
                 is_member: groupMembers.some(member => member.userId === userId),
                 members: groupMembers.length,
                 members_profile: courseMembersProfile,
-                courses: groupCoursesData,
+                courses: course_data,
                 events: events,
                 activities: activities,
                 posts: posts,
