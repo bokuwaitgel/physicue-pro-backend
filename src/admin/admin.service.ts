@@ -967,7 +967,49 @@ export class AdminService {
                 userId: userId,
             },
         });
+
+        const booking = await this.prisma.booking.findFirst({
+            where: {
+                courseId: courseId,
+                userId: userId,
+            },
+        });
+
+        if (booking) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'User has already booked this course',
+                code: HttpStatus.CONFLICT,
+            };
+        }
         if (existingEnrollment) {
+            
+            if (!booking){
+                const booking = await this.prisma.booking.create({
+                    data: {
+                        userId: userId,
+                        courseId: courseId,
+                        enrolledId: existingEnrollment.id,
+                        startTime: new Date(),
+                        endTime: new Date(new Date().getTime() + 24 * 60 * 60 * 1000 * course.duration), // 24 hours from now
+                    }
+                });
+
+                return {
+                    success: true,
+                    type: 'success',
+                    message: 'User enrolled in course successfully',
+                    code: HttpStatus.CREATED,
+                    data: {
+                        enrollmentId: existingEnrollment.id,
+                        courseId: courseId,
+                        userId: userId,
+                        teacherId: course.teacherId,
+                    },
+                };
+            }
+
             return {
                 success: false,
                 type: 'error',
@@ -994,6 +1036,16 @@ export class AdminService {
                 userId: userId,
                 teacherId: teacher.id,
             },
+        });
+
+        const bookingEntry = await this.prisma.booking.create({
+            data: {
+                userId: userId,
+                courseId: courseId,
+                enrolledId: enrollments.id,
+                startTime: new Date(),
+                endTime: new Date(new Date().getTime() + 24 * 60 * 60 * 1000 * course.duration), // 24 hours from now
+            }
         });
 
         return {
