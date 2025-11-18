@@ -223,4 +223,12 @@ export class AdminController {
         return this.adminService.getAnalytics();
     }
 
+    // enroll course to users
+    @Post('enrollCourse')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    async enrollCourseToUsers(@Body() data: {courseId: string, userId: string}) {
+        return this.adminService.enrollCourseToUsers(data.courseId, data.userId);
+    }
+
 }

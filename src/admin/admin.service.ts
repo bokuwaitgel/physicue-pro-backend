@@ -936,7 +936,79 @@ export class AdminService {
         return user;
       }
 
-  
+    async enrollCourseToUsers(courseId: string, userId: string): Promise<any> {
+        const course = await this.prisma.courses.findUnique({
+            where: { id: courseId },
+        });
+        if (!course) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Course not found',
+                code: HttpStatus.NOT_FOUND,
+            };
+        }
+
+       const user = await this.prisma.user.findUnique({ 
+            where: { id: userId },
+        });
+        if (!user) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'User not found',
+                code: HttpStatus.NOT_FOUND,
+            };
+        }
+
+        const existingEnrollment = await this.prisma.courseEnrollment.findFirst({
+            where: {
+                courseId: courseId,
+                userId: userId,
+            },
+        });
+        if (existingEnrollment) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'User already enrolled in this course',
+                code: HttpStatus.CONFLICT,
+            };
+        }
+
+        const teacher = await this.prisma.teacher.findUnique({
+            where: { id: course.teacherId },
+        });
+        if (!teacher) {
+            return {
+                success: false,
+                type: 'error',
+                message: 'Teacher not found for this course',
+                code: HttpStatus.NOT_FOUND,
+            };
+        }
+
+        const enrollments = await this.prisma.courseEnrollment.create({
+            data: {
+                courseId: courseId,
+                userId: userId,
+                teacherId: teacher.id,
+            },
+        });
+
+        return {
+            success: true,
+            type: 'success',
+            message: 'User enrolled in course successfully',
+            code: HttpStatus.CREATED,
+            data: {
+                enrollmentId: enrollments.id,
+                courseId: courseId,
+                userId: userId,
+                teacherId: teacher.id,
+            },
+        };
+    }
+
 
 }
-
