@@ -1265,14 +1265,16 @@ export class MealPlanService {
         message: 'Failed to analyze meal image',
       };
     }
+    console.log('Image analysis response:', response.data);
 
     // save result to database
     // output -> food items with calories, protein, carbs, fats
     const analyzedData = response.data;
-    const foodList = analyzedData.food || [];
+    const foodList = analyzedData.output.food || [];
     for (const foodItem of foodList) {
       const { name, calories, protein, carbs, fats } = foodItem;
-      await this.prisma.mealTracker .create({
+      console.log('Saving food item:', foodItem);
+      await this.prisma.mealTracker.create({
         data: {
           userId,
           name,
