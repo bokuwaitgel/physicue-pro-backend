@@ -8,12 +8,13 @@ import {
   Param,
   Query,
   UseGuards,
-  Request,
+  UploadedFile,
   HttpCode,
   HttpStatus,
   Headers,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { MealPlanService } from './meal-plan.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { AuthService } from '../../auth/auth.service';
@@ -31,6 +32,7 @@ import {
   CreateMealPlanDto,
   UpdateMealPlanDto,
 } from './meal-plan.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('meal-plan')
 @Controller('meal-plan')
@@ -425,4 +427,36 @@ export class MealPlanController {
     }
     return this.mealPlanService.deleteMealPlan(mealPlanId);
   }
+
+
+  @Post('image-upload')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMealImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('Authorization') auth: string
+  ) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.mealPlanService.uploadMealImage(userId, file);
+  }
+
+  @Get('image-meals')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get meals added via image upload' })
+  async getImageUploadedMeals(@Headers('Authorization') auth: string) {
+    const decoded = await this.authService.verifyToken({ token: auth });
+    if (decoded.code != 200) {
+      return decoded;
+    }
+    const userId = decoded.data.id;
+    return this.mealPlanService.getMealImageAnalysisHistory(userId);
+  }
+
 }

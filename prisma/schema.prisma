@@ -232,6 +232,22 @@ model CaloriesHistory {
 // ============================================================================
 
 
+model MealTracker {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  date      DateTime
+  name      String   @default("")
+  kcal      Float    @default(0)
+  protein   Float    @default(0)
+  carbs     Float    @default(0)
+  fats      Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+
 model UserMealTrackerDaily {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId

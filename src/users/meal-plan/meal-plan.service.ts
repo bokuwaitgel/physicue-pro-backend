@@ -20,6 +20,7 @@ import {
   UpdateMealPlanDto,
   MealPlanResponseDto,
 } from './meal-plan.dto';
+import axios from 'axios';
 
 @Injectable()
 export class MealPlanService {
@@ -712,12 +713,15 @@ export class MealPlanService {
     });
 
     if (!entry) {
-      throw new NotFoundException('Calorie entry not found');
+      return {
+        status: false,
+        type: 'error',
+        message: 'Calorie entry not found',
+        code: HttpStatus.NOT_FOUND,
+      };
     }
 
-    if (entry.userId !== userId) {
-      throw new BadRequestException('You can only view your own calorie entries');
-    }
+  
 
     return {
       status: true,
@@ -1223,4 +1227,87 @@ export class MealPlanService {
       message: 'Meal plan deleted successfully',
     };
   }
+
+  // ============================================================================
+  // MEAL PLAN OPERATIONS (Course Meal Plans)
+  // ============================================================================
+
+  async uploadMealImage(userId: string, file: Express.Multer.File) { 
+    // create post request to 3rd party image analize service
+    const FormData = require('form-data');
+    const data = new FormData();
+    data.append('image', file.buffer, {
+      filename: file.originalname,
+      contentType: file.mimetype,
+    });
+
+    // IMAGE_TO_CALORIES_URL
+    const url = process.env.IMAGE_TO_CALORIES_URL;
+    
+    if (!url) {
+      return {
+        success: false,
+        type: 'error',
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Image analysis service URL not configured',
+      }
+    }
+
+    const response = await axios.post(url, data);
+
+    // save result to database
+
+    if (response.status !== 200) {
+      return {
+        success: false,
+        type: 'error',
+        code: HttpStatus.BAD_GATEWAY,
+        message: 'Failed to analyze meal image',
+      };
+    }
+
+    // save result to database
+    // output -> food items with calories, protein, carbs, fats
+    const analyzedData = response.data;
+    const foodList = analyzedData.food || [];
+    for (const foodItem of foodList) {
+      const { name, calories, protein, carbs, fats } = foodItem;
+      await this.prisma.mealTracker .create({
+        data: {
+          userId,
+          name,
+          kcal: calories,
+          protein,
+          carbs,
+          fats,
+          date: new Date(),
+        },
+      });
+    }
+
+
+
+    return {
+      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      message: 'Meal image uploaded and analyzed successfully',
+      data: foodList,
+    };
+    
+  }
+
+  async getMealImageAnalysisHistory(userId: string) {
+    const records = await this.prisma.mealTracker.findMany({
+      where: { userId },
+      orderBy: { date: 'desc' },
+    });
+    return {      success: true,
+      type: 'success',
+      code: HttpStatus.OK,
+      data: records,
+    };
+  }
+
+d
 }
